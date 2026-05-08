@@ -5,26 +5,31 @@
 - [x] Keep this management folder at `wiou_progloss_experiment/`.
 - [x] Keep `edgelite_experiment/configs/yolo26n_edgelite.yaml` unchanged.
 - [x] Keep `edgelite_experiment/train_coffee_edgelite.py` as the baseline script.
-- [x] Implement only inside `edgelite_experiment/local_ultralytics`.
+- [x] Keep native `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py` available for baseline tests.
+- [x] Implement experimental loss code inside `wiou_progloss_experiment/`.
 - [x] Add the new train script at `wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`.
 
 ## Code Changes
 
-- [x] Add flat loss config keys to `edgelite_experiment/local_ultralytics/ultralytics/cfg/default.yaml`.
-- [x] Add the new switch and scalar keys to `edgelite_experiment/local_ultralytics/ultralytics/cfg/__init__.py` type sets where needed.
-- [x] Add a WIoU helper in `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py`.
-- [x] Update `BboxLoss` to support baseline CIoU and WIoU modes.
-- [x] Register WIoU running mean as a `BboxLoss` buffer.
+- [x] Keep local `ultralytics/cfg/default.yaml` free of experiment-only loss keys.
+- [x] Keep local `ultralytics/cfg/__init__.py` free of experiment-only type checks.
+- [x] Add reusable WIoU and ProgLoss helpers in `wiou_progloss_experiment/loss_extensions.py`.
+- [x] Add custom criterion classes in `wiou_progloss_experiment/wiou_progloss_loss.py`.
+- [x] Register WIoU running mean as a custom `BboxWIoUProgLoss` buffer.
 - [x] Use raw IoU for WIoU beta and focus calculation.
-- [x] Keep the existing L1-style branch for `reg_max: 1`.
+- [x] Keep the native L1-style branch for `reg_max: 1` inside the custom criterion.
 - [x] Add progressive positive-only class weights around BCE classification loss.
-- [x] Pass `model.args` into `BboxLoss` from `v8DetectionLoss`.
-- [x] Propagate epoch progress through `E2ELoss.update()`.
-- [x] Make WIoU and ProgLoss disabled by default unless explicitly enabled.
+- [x] Patch `DetectionModel.init_criterion` only in the experiment training process.
+- [x] Propagate epoch progress through custom `E2EWIoUProgLoss.update()`.
+- [x] Keep WIoU and ProgLoss outside the native loss file unless explicitly enabled by the experiment script.
 
 ## First Smoke Test
 
 - [x] Run `edgelite_experiment/check_edgelite_build.py`.
+- [x] Compile the new experiment modules and restored native loss file.
+- [x] Run custom WIoU bbox-loss smoke test.
+- [x] Run custom ProgLoss classification smoke test.
+- [x] Confirm `loss_config.yaml` loads and patches the experiment criterion in process.
 - [ ] Train for 3 epochs with WIoU disabled and ProgLoss disabled to confirm baseline still works.
 - [ ] Train for 3 epochs with WIoU only.
 - [ ] Train for 3 epochs with ProgLoss only.

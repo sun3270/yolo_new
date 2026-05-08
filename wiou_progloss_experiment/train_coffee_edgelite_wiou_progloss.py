@@ -24,11 +24,20 @@ LOCAL_ULTRALYTICS = EDGE_ROOT / "local_ultralytics"
 CFG = EDGE_ROOT / "configs" / "yolo26n_edgelite.yaml"
 WEIGHTS = ROOT / "yolo26n.pt"
 DATA = ROOT / "coffee3000" / "coffee3000.yaml"
+LOSS_CONFIG = EXP_ROOT / "loss_config.yaml"
 CLASS_COUNTS = [501, 606, 332, 618, 709, 163]
 
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(LOCAL_ULTRALYTICS))
 
 from ultralytics import YOLO  # noqa: E402
+from ultralytics.utils import YAML  # noqa: E402
+
+from wiou_progloss_experiment.wiou_progloss_loss import (  # noqa: E402
+    DEFAULT_LOSS_CONFIG,
+    configure_wiou_progloss,
+    patch_detection_model_loss,
+)
 
 
 def select_cuda_device() -> int:
@@ -54,6 +63,11 @@ def format_metric(results, key: str) -> str:
 def main():
     device = select_cuda_device()
     epochs = int(os.environ.get("WIOU_PROGLOSS_EPOCHS", "200"))
+    loss_config = YAML.load(LOSS_CONFIG) if LOSS_CONFIG.exists() else {}
+    loss_overrides = {k: loss_config.get(k) for k in DEFAULT_LOSS_CONFIG if k in loss_config}
+    loss_overrides.setdefault("progloss_class_counts", CLASS_COUNTS)
+    configure_wiou_progloss(**loss_overrides)
+    patch_detection_model_loss()
 
     model = YOLO(str(CFG))
     if WEIGHTS.exists():
@@ -87,24 +101,6 @@ def main():
         box=7.5,
         cls=0.5,
         dfl=1.5,
-        loss_name="wiou_progloss",
-        wiou_enabled=True,
-        wiou_alpha=1.7,
-        wiou_delta=2.7,
-        wiou_momentum=0.0001,
-        wiou_focus_min=0.5,
-        wiou_focus_max=3.0,
-        wiou_use_distance_gain=True,
-        wiou_distance_gain_max=1.8,
-        wiou_fallback_base="raw_iou",
-        progloss_enabled=True,
-        progloss_warmup_ratio=0.10,
-        progloss_ramp_end_ratio=0.60,
-        progloss_tail_power=0.5,
-        progloss_tail_lambda_max=0.8,
-        progloss_tail_weight_min=0.75,
-        progloss_tail_weight_max=1.8,
-        progloss_class_counts=CLASS_COUNTS,
     )
 
     print("\n=== Training complete ===")

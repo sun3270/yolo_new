@@ -1,9 +1,6 @@
-# Flat proposed loss switches for the root-level WIoU + ProgLoss experiment.
-# Add these keys to:
-# edgelite_experiment/local_ultralytics/ultralytics/cfg/default.yaml
-#
-# Then enable the experiment from:
-# wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+# Flat loss switches for the root-level WIoU + ProgLoss experiment.
+# These values are loaded by wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+# and then applied to wiou_progloss_experiment/wiou_progloss_loss.py.
 
 loss_name: wiou_progloss
 
@@ -37,6 +34,7 @@ coffee3000_class_counts:
 recommended_training:
   base_script: edgelite_experiment/train_coffee_edgelite.py
   new_script: wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+  custom_loss_module: wiou_progloss_experiment/wiou_progloss_loss.py
   new_run_name: yolo26n_edgelite_wiou_progloss_coffee3000
   smoke_epochs: 3
   full_epochs: 200

@@ -106,24 +106,6 @@ pose: 12.0 # (float) pose loss gain (pose tasks)
 kobj: 1.0 # (float) keypoint objectness loss gain (pose tasks)
 rle: 1.0 # (float) rle loss gain (pose tasks)
 angle: 1.0 # (float) oriented angle loss gain (obb tasks)
-loss_name: default # (str) optional custom loss route label
-wiou_enabled: False # (bool) enable WIoU dynamic non-monotonic box loss
-wiou_alpha: 1.7 # (float) WIoU non-monotonic focusing alpha
-wiou_delta: 2.7 # (float) WIoU non-monotonic focusing delta
-wiou_momentum: 0.0001 # (float) WIoU running mean update momentum
-wiou_focus_min: 0.5 # (float) minimum WIoU focus gain
-wiou_focus_max: 3.0 # (float) maximum WIoU focus gain
-wiou_use_distance_gain: True # (bool) enable WIoU distance gain
-wiou_distance_gain_max: 1.8 # (float) maximum WIoU distance gain
-wiou_fallback_base: raw_iou # (str) WIoU base mode: raw_iou or ciou_focus
-progloss_enabled: False # (bool) enable progressive positive class reweighting
-progloss_warmup_ratio: 0.10 # (float) training progress before ProgLoss starts
-progloss_ramp_end_ratio: 0.60 # (float) training progress when ProgLoss reaches full strength
-progloss_tail_power: 0.5 # (float) class-count inverse power for tail weighting
-progloss_tail_lambda_max: 0.8 # (float) maximum progressive tail-weight blend
-progloss_tail_weight_min: 0.75 # (float) minimum clipped class weight
-progloss_tail_weight_max: 1.8 # (float) maximum clipped class weight
-progloss_class_counts: [] # (list[int]) class instance counts in class-index order
 nbs: 64 # (int) nominal batch size used for loss normalization
 hsv_h: 0.015 # (float) HSV hue augmentation fraction
 hsv_s: 0.7 # (float) HSV saturation augmentation fraction

@@ -13,6 +13,9 @@ validated YOLO26n-EdgeLite route.
 The folder is intentionally placed at the repository root for easier management,
 but the planned loss changes still target the modified EdgeLite version under
 `edgelite_experiment/`. The root package `ultralytics/` should stay unchanged.
+The native local loss file
+`edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py` should also
+stay native, so later experiments can use the original loss directly.
 
 ## Applicable Version
 
@@ -32,12 +35,15 @@ preserving the lighter EdgeLite architecture.
 ## Files
 
 - `design.md`: concrete design, integration path, and feasibility notes
-- `loss_config.yaml`: flat proposed switches and default parameters
+- `loss_config.yaml`: flat switches and default parameters loaded by the experiment script
 - `implementation_checklist.md`: safe implementation and validation order
+- `loss_extensions.py`: reusable WIoU and ProgLoss math helpers
+- `wiou_progloss_loss.py`: custom criterion classes and runtime patch hook
+- `train_coffee_edgelite_wiou_progloss.py`: isolated training entry
 
 ## Management Rule
 
-Do not modify the verified EdgeLite baseline training script directly. Implement
-and test this loss route as a separate experiment from this root-level folder,
-then compare it against the baseline with the same data split, image size, batch
-size, epochs, and pretrained weights.
+Do not modify the verified EdgeLite baseline training script or native loss file
+directly. Implement and test this loss route as a separate experiment from this
+root-level folder, then compare it against the baseline with the same data split,
+image size, batch size, epochs, and pretrained weights.

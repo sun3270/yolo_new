@@ -10,15 +10,18 @@ The implementation target is still the tested no-SimAM EdgeLite route:
 
 - Model YAML: `edgelite_experiment/configs/yolo26n_edgelite.yaml`
 - Baseline training script: `edgelite_experiment/train_coffee_edgelite.py`
-- Editable local package: `edgelite_experiment/local_ultralytics`
+- EdgeLite local package: `edgelite_experiment/local_ultralytics`
 - Package that should remain unchanged: `ultralytics/`
+- Native local loss file that should remain unchanged:
+  `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py`
 
-The new training entry should be created at:
+The isolated training entry is:
 
 `wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`
 
 That script should prepend `edgelite_experiment/local_ultralytics` to `sys.path`,
-the same way the baseline EdgeLite script does.
+configure the experiment loss from this folder, and temporarily patch
+`DetectionModel.init_criterion` for the current training process only.
 
 ## Current Baseline
 
@@ -54,10 +57,12 @@ Use two complementary mechanisms:
 
 ## Component A: WIoU Box Loss
 
-Replace the current CIoU box term with a WIoU-v3-style term in the EdgeLite local
-loss file:
+Replace the current CIoU box term at runtime with a WIoU-v3-style criterion
+implemented in:
 
-`edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py`
+`wiou_progloss_experiment/wiou_progloss_loss.py`
+
+The native local loss file remains unchanged.
 
 Recommended first version:
 
@@ -146,40 +151,36 @@ Important implementation detail:
 
 ## Integration Points
 
-Implementation should be isolated to the EdgeLite local package while managed
-from this root-level folder:
+Implementation should be isolated to this root-level experiment folder while
+using the EdgeLite local package as an imported dependency:
 
-1. Add new config keys to:
-   `edgelite_experiment/local_ultralytics/ultralytics/cfg/default.yaml`
-
-2. Add the new keys to the local config type sets where useful:
-   `edgelite_experiment/local_ultralytics/ultralytics/cfg/__init__.py`
-
-   Use boolean keys for switches and float keys for scalar parameters. This is
-   required if the values are ever passed through CLI-style overrides.
-
-3. Update `BboxLoss` in:
+1. Keep the native local loss file unchanged:
    `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py`
 
-4. Pass `model.args` into `BboxLoss` from `v8DetectionLoss`.
+2. Keep the local Ultralytics config files unchanged:
+   `edgelite_experiment/local_ultralytics/ultralytics/cfg/default.yaml`
+   `edgelite_experiment/local_ultralytics/ultralytics/cfg/__init__.py`
 
-5. Add progressive class reweighting around the existing BCE classification loss.
+3. Put reusable WIoU and ProgLoss math helpers in:
+   `wiou_progloss_experiment/loss_extensions.py`
 
-6. Extend `v8DetectionLoss` with an epoch-progress state, then extend
-   `E2ELoss.update()` so it also advances that state inside both:
-   - `one2many`
-   - `one2one`
+4. Put the experiment criterion classes in:
+   `wiou_progloss_experiment/wiou_progloss_loss.py`
 
-7. Add a separate training script after implementation:
+5. In the experiment training script, call:
+   - `configure_wiou_progloss(...)`
+   - `patch_detection_model_loss()`
+
+6. Add a separate training script:
    `wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`
 
-## Proposed Flat Config Keys
+This keeps the native loss available for future ablations and avoids scattering
+experimental implementation across the local Ultralytics package.
 
-Use flat keys so they can be added to `default.yaml` and read as `self.hyp.*`:
+## Experiment Config
 
 ```yaml
-loss_name: wiou_progloss
-wiou_enabled: false
+wiou_enabled: true
 wiou_alpha: 1.7
 wiou_delta: 2.7
 wiou_momentum: 0.0001
@@ -188,7 +189,7 @@ wiou_focus_max: 3.0
 wiou_use_distance_gain: true
 wiou_distance_gain_max: 1.8
 wiou_fallback_base: raw_iou
-progloss_enabled: false
+progloss_enabled: true
 progloss_warmup_ratio: 0.10
 progloss_ramp_end_ratio: 0.60
 progloss_tail_power: 0.5
@@ -198,8 +199,8 @@ progloss_tail_weight_max: 1.8
 progloss_class_counts: [501, 606, 332, 618, 709, 163]
 ```
 
-Keep both switches disabled by default in `default.yaml`. The new experiment
-script should enable them explicitly, so the verified baseline remains intact.
+These values are loaded from `wiou_progloss_experiment/loss_config.yaml` by the
+experiment training script, not through the native Ultralytics default config.
 
 ## Why Not Change Architecture
 
@@ -247,10 +248,11 @@ while keeping baseline mAP50-95 flat or slightly higher.
 
 This plan is implementable in the current codebase because:
 
-- `BboxLoss` is already the single box-loss entry for the detection branch.
-- `v8DetectionLoss` owns both box and classification terms, so ProgLoss can be
-  added without changing the model head.
-- `E2ELoss.update()` is already called once per epoch by the trainer, so epoch
-  progress can be propagated without modifying the training loop.
-- The EdgeLite experiment already uses an isolated local package, so the root
-  package and verified baseline can remain untouched.
+- `DetectionModel.init_criterion` can be patched in the experiment process before
+  training starts.
+- The custom criterion can subclass the native `BboxLoss`, `v8DetectionLoss`,
+  and `E2ELoss`, so model heads and assignment code remain compatible.
+- `E2ELoss.update()` is already called once per epoch by the trainer, so the
+  custom E2E loss can propagate progress without modifying the training loop.
+- The EdgeLite experiment already uses an isolated local package, and the custom
+  loss now lives outside that package, so native losses remain available.
