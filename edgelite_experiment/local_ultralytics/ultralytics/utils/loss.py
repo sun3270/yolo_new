@@ -106,13 +106,93 @@ class DFLoss(nn.Module):
         ).mean(-1, keepdim=True)
 
 
+def smooth_progress(progress: float, start: float, end: float) -> float:
+    """Return a smooth 0-1 ramp for progressive loss scheduling."""
+    if end <= start:
+        return 1.0 if progress >= end else 0.0
+    x = min(max((progress - start) / (end - start), 0.0), 1.0)
+    return x * x * (3.0 - 2.0 * x)
+
+
+def xyxy_iou_distance_gain(
+    box1: torch.Tensor, box2: torch.Tensor, eps: float = 1e-7
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Return raw IoU and WIoU distance gain for aligned xyxy boxes."""
+    b1_x1, b1_y1, b1_x2, b1_y2 = box1.chunk(4, -1)
+    b2_x1, b2_y1, b2_x2, b2_y2 = box2.chunk(4, -1)
+
+    w1, h1 = b1_x2 - b1_x1, b1_y2 - b1_y1 + eps
+    w2, h2 = b2_x2 - b2_x1, b2_y2 - b2_y1 + eps
+    inter = (b1_x2.minimum(b2_x2) - b1_x1.maximum(b2_x1)).clamp_(0) * (
+        b1_y2.minimum(b2_y2) - b1_y1.maximum(b2_y1)
+    ).clamp_(0)
+    union = w1 * h1 + w2 * h2 - inter + eps
+    raw_iou = inter / union
+
+    cw = b1_x2.maximum(b2_x2) - b1_x1.minimum(b2_x1)
+    ch = b1_y2.maximum(b2_y2) - b1_y1.minimum(b2_y1)
+    c2 = cw.pow(2) + ch.pow(2) + eps
+    rho2 = ((b2_x1 + b2_x2 - b1_x1 - b1_x2).pow(2) + (b2_y1 + b2_y2 - b1_y1 - b1_y2).pow(2)) / 4
+    distance_gain = torch.exp((rho2 / c2).clamp(min=0.0))
+    return raw_iou, distance_gain
+
+
 class BboxLoss(nn.Module):
     """Criterion class for computing training losses for bounding boxes."""
 
-    def __init__(self, reg_max: int = 16):
+    def __init__(self, reg_max: int = 16, hyp: Any | None = None):
         """Initialize the BboxLoss module with regularization maximum and DFL settings."""
         super().__init__()
+        self.hyp = hyp
         self.dfl_loss = DFLoss(reg_max) if reg_max > 1 else None
+        self.progress = 0.0
+        self.register_buffer("wiou_running_mean", torch.tensor(1.0))
+
+    def set_progress(self, progress: float) -> None:
+        """Set the current training progress used by progressive WIoU blending."""
+        self.progress = min(max(float(progress), 0.0), 1.0)
+
+    def _arg(self, name: str, default: Any) -> Any:
+        """Read an optional hyperparameter from the training args."""
+        return getattr(self.hyp, name, default) if self.hyp is not None else default
+
+    def _progress_blend(self) -> float:
+        """Return the active WIoU blend amount."""
+        if not self._arg("progloss_enabled", False):
+            return 1.0
+        return smooth_progress(
+            self.progress,
+            float(self._arg("progloss_warmup_ratio", 0.10)),
+            float(self._arg("progloss_ramp_end_ratio", 0.60)),
+        )
+
+    def _wiou_box_loss(
+        self, pred_bboxes: torch.Tensor, target_bboxes: torch.Tensor, ciou_loss: torch.Tensor | None = None
+    ) -> torch.Tensor:
+        """Compute dynamic non-monotonic WIoU loss for aligned xyxy boxes."""
+        raw_iou, distance_gain = xyxy_iou_distance_gain(pred_bboxes, target_bboxes)
+        if str(self._arg("wiou_fallback_base", "raw_iou")).lower() == "ciou_focus" and ciou_loss is not None:
+            base_loss = ciou_loss.clamp(min=0.0, max=2.0)
+        else:
+            base_loss = (1.0 - raw_iou).clamp(min=0.0, max=2.0)
+
+        with torch.no_grad():
+            batch_mean = base_loss.detach().mean().clamp(min=1e-7)
+            momentum = float(self._arg("wiou_momentum", 0.0001))
+            if self.training:
+                self.wiou_running_mean.mul_(1.0 - momentum).add_(batch_mean * momentum)
+            running_mean = self.wiou_running_mean.to(device=base_loss.device, dtype=base_loss.dtype).clamp(min=1e-7)
+            beta = (base_loss.detach() / running_mean).clamp(min=1e-7, max=10.0)
+            alpha = torch.tensor(float(self._arg("wiou_alpha", 1.7)), device=base_loss.device, dtype=base_loss.dtype)
+            delta = float(self._arg("wiou_delta", 2.7))
+            focus = beta / (delta * torch.pow(alpha, beta - delta))
+            focus = focus.clamp(float(self._arg("wiou_focus_min", 0.5)), float(self._arg("wiou_focus_max", 3.0)))
+            if self._arg("wiou_use_distance_gain", True):
+                distance_gain = distance_gain.clamp(max=float(self._arg("wiou_distance_gain_max", 1.8)))
+            else:
+                distance_gain = torch.ones_like(distance_gain)
+
+        return base_loss * focus * distance_gain
 
     def forward(
         self,
@@ -128,8 +208,16 @@ class BboxLoss(nn.Module):
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute IoU and DFL losses for bounding boxes."""
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
-        iou = bbox_iou(pred_bboxes[fg_mask], target_bboxes[fg_mask], xywh=False, CIoU=True)
-        loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+        pred_fg, target_fg = pred_bboxes[fg_mask], target_bboxes[fg_mask]
+        iou = bbox_iou(pred_fg, target_fg, xywh=False, CIoU=True)
+        ciou_loss = 1.0 - iou
+        if self._arg("wiou_enabled", False):
+            wiou_loss = self._wiou_box_loss(pred_fg, target_fg, ciou_loss)
+            blend = self._progress_blend()
+            box_loss = ciou_loss * (1.0 - blend) + wiou_loss * blend
+        else:
+            box_loss = ciou_loss
+        loss_iou = (box_loss * weight).sum() / target_scores_sum
 
         # DFL loss
         if self.dfl_loss:
@@ -357,8 +445,54 @@ class v8DetectionLoss:
             stride=self.stride.tolist(),
             topk2=tal_topk2,
         )
-        self.bbox_loss = BboxLoss(m.reg_max).to(device)
+        self.loss_epoch = 0
+        self.loss_progress = 0.0
+        self.bbox_loss = BboxLoss(m.reg_max, h).to(device)
+        self.progloss_class_weights = self._build_progloss_class_weights().to(device)
         self.proj = torch.arange(m.reg_max, dtype=torch.float, device=device)
+
+    def _build_progloss_class_weights(self) -> torch.Tensor:
+        """Build clipped mean-normalized class weights from configured class counts."""
+        counts = getattr(self.hyp, "progloss_class_counts", None)
+        if isinstance(counts, str):
+            counts = [x.strip() for x in counts.strip("[]").split(",") if x.strip()]
+        if not counts or len(counts) != self.nc:
+            return torch.ones(self.nc, dtype=torch.float, device=self.device)
+        counts = torch.tensor([float(x) for x in counts], dtype=torch.float, device=self.device).clamp(min=1.0)
+        weights = (counts.max() / counts).pow(float(getattr(self.hyp, "progloss_tail_power", 0.5)))
+        weights = weights / weights.mean().clamp(min=1e-7)
+        return weights.clamp(
+            min=float(getattr(self.hyp, "progloss_tail_weight_min", 0.75)),
+            max=float(getattr(self.hyp, "progloss_tail_weight_max", 1.8)),
+        )
+
+    def _progloss_gain(self) -> float:
+        """Return the active tail-class weighting gain."""
+        if not getattr(self.hyp, "progloss_enabled", False):
+            return 0.0
+        return smooth_progress(
+            self.loss_progress,
+            float(getattr(self.hyp, "progloss_warmup_ratio", 0.10)),
+            float(getattr(self.hyp, "progloss_ramp_end_ratio", 0.60)),
+        ) * float(getattr(self.hyp, "progloss_tail_lambda_max", 0.8))
+
+    def classification_loss(self, pred_scores: torch.Tensor, target_scores: torch.Tensor, dtype: torch.dtype) -> torch.Tensor:
+        """Compute BCE classification loss with optional positive-only ProgLoss class weights."""
+        target_scores = target_scores.to(dtype)
+        cls_loss = self.bce(pred_scores, target_scores)
+        gain = self._progloss_gain()
+        if gain > 0.0:
+            class_weights = self.progloss_class_weights.to(device=pred_scores.device, dtype=dtype)
+            active_weights = 1.0 + gain * (class_weights - 1.0)
+            positive_scale = 1.0 + (active_weights.view(1, 1, -1) - 1.0) * target_scores
+            cls_loss *= positive_scale
+        return cls_loss.sum()
+
+    def update(self) -> None:
+        """Advance progressive loss state after each completed epoch."""
+        self.loss_epoch += 1
+        self.loss_progress = min(self.loss_epoch / max(int(getattr(self.hyp, "epochs", 1)) - 1, 1), 1.0)
+        self.bbox_loss.set_progress(self.loss_progress)
 
     def preprocess(self, targets: torch.Tensor, batch_size: int, scale_tensor: torch.Tensor) -> torch.Tensor:
         """Preprocess targets by converting to tensor format and scaling coordinates."""
@@ -422,7 +556,7 @@ class v8DetectionLoss:
         target_scores_sum = max(target_scores.sum(), 1)
 
         # Cls loss
-        loss[1] = self.bce(pred_scores, target_scores.to(dtype)).sum() / target_scores_sum  # BCE
+        loss[1] = self.classification_loss(pred_scores, target_scores, dtype) / target_scores_sum  # BCE
 
         # Bbox loss
         if fg_mask.sum():
@@ -1166,6 +1300,8 @@ class E2ELoss:
         self.updates += 1
         self.o2m = self.decay(self.updates)
         self.o2o = max(self.total - self.o2m, 0)
+        self.one2many.update()
+        self.one2one.update()
 
     def decay(self, x) -> float:
         """Calculate the decayed weight for one-to-many loss based on the current update step."""

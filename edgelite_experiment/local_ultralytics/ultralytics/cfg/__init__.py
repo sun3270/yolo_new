@@ -154,6 +154,14 @@ CFG_FLOAT_KEYS = frozenset(
         "box",
         "cls",
         "dfl",
+        "wiou_alpha",
+        "wiou_delta",
+        "wiou_focus_min",
+        "wiou_focus_max",
+        "wiou_distance_gain_max",
+        "progloss_tail_power",
+        "progloss_tail_weight_min",
+        "progloss_tail_weight_max",
         "degrees",
         "shear",
         "time",
@@ -187,6 +195,10 @@ CFG_FRACTION_KEYS = frozenset(
         "iou",
         "fraction",
         "multi_scale",
+        "wiou_momentum",
+        "progloss_warmup_ratio",
+        "progloss_ramp_end_ratio",
+        "progloss_tail_lambda_max",
     }
 )
 CFG_INT_KEYS = frozenset(
@@ -239,6 +251,9 @@ CFG_BOOL_KEYS = frozenset(
         "nms",
         "profile",
         "end2end",
+        "wiou_enabled",
+        "wiou_use_distance_gain",
+        "progloss_enabled",
     }
 )
 

@@ -12,7 +12,7 @@
 [
   {
     "name": "native",
-    "cfg": "E:\\\u8ba1\u7b97\u673a\u6bd4\u8d5b\\urp\\ultralytics-src-8.4.14\\edgelite_experiment\\configs\\yolo26n_original_copy.yaml",
+    "cfg": "E:\\ultralytics-8.4.43\\edgelite_experiment\\configs\\yolo26n_original_copy.yaml",
     "layers": 260,
     "params": 2506140,
     "trainable": 2506140,
@@ -99,7 +99,7 @@
   },
   {
     "name": "edgelite",
-    "cfg": "E:\\\u8ba1\u7b97\u673a\u6bd4\u8d5b\\urp\\ultralytics-src-8.4.14\\edgelite_experiment\\configs\\yolo26n_edgelite.yaml",
+    "cfg": "E:\\ultralytics-8.4.43\\edgelite_experiment\\configs\\yolo26n_edgelite.yaml",
     "layers": 324,
     "params": 1951870,
     "trainable": 1951870,
@@ -186,7 +186,7 @@
   },
   {
     "name": "edgelite_simam",
-    "cfg": "E:\\\u8ba1\u7b97\u673a\u6bd4\u8d5b\\urp\\ultralytics-src-8.4.14\\edgelite_experiment\\configs\\yolo26n_edgelite_simam.yaml",
+    "cfg": "E:\\ultralytics-8.4.43\\edgelite_experiment\\configs\\yolo26n_edgelite_simam.yaml",
     "layers": 324,
     "params": 1951870,
     "trainable": 1951870,

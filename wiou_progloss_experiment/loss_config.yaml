@@ -1,0 +1,44 @@
+# Flat proposed loss switches for the root-level WIoU + ProgLoss experiment.
+# Add these keys to:
+# edgelite_experiment/local_ultralytics/ultralytics/cfg/default.yaml
+#
+# Then enable the experiment from:
+# wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+
+loss_name: wiou_progloss
+
+wiou_enabled: true
+wiou_alpha: 1.7
+wiou_delta: 2.7
+wiou_momentum: 0.0001
+wiou_focus_min: 0.5
+wiou_focus_max: 3.0
+wiou_use_distance_gain: true
+wiou_distance_gain_max: 1.8
+wiou_fallback_base: raw_iou
+
+progloss_enabled: true
+progloss_warmup_ratio: 0.10
+progloss_ramp_end_ratio: 0.60
+progloss_tail_power: 0.5
+progloss_tail_lambda_max: 0.8
+progloss_tail_weight_min: 0.75
+progloss_tail_weight_max: 1.8
+progloss_class_counts: [501, 606, 332, 618, 709, 163]
+
+coffee3000_class_counts:
+  algal_spot: 501
+  brown_eye_spot: 606
+  healthy: 332
+  miner: 618
+  phoma: 709
+  powdery_mildew: 163
+
+recommended_training:
+  base_script: edgelite_experiment/train_coffee_edgelite.py
+  new_script: wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+  new_run_name: yolo26n_edgelite_wiou_progloss_coffee3000
+  smoke_epochs: 3
+  full_epochs: 200
+  keep_architecture: true
+  keep_simam_disabled: true
