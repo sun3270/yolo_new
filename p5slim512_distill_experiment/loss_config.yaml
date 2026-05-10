@@ -1,0 +1,42 @@
+# WIoU + ProgLoss + teacher-student distillation settings for P5Slim-512.
+
+loss_name: wiou_progloss_distill
+
+wiou_enabled: true
+wiou_alpha: 1.7
+wiou_delta: 2.7
+wiou_momentum: 0.0001
+wiou_focus_min: 0.5
+wiou_focus_max: 3.0
+wiou_use_distance_gain: true
+wiou_distance_gain_max: 1.8
+wiou_fallback_base: raw_iou
+
+progloss_enabled: true
+progloss_warmup_ratio: 0.10
+progloss_ramp_end_ratio: 0.60
+progloss_tail_power: 0.5
+progloss_tail_lambda_max: 0.8
+progloss_tail_weight_min: 0.75
+progloss_tail_weight_max: 1.8
+progloss_class_counts: [501, 606, 332, 618, 709, 163]
+
+distill_enabled: true
+distill_start_ratio: 0.00
+distill_ramp_end_ratio: 0.20
+distill_temperature: 2.0
+distill_score_weight: 0.35
+distill_box_weight: 0.20
+distill_feature_weight: 0.08
+distill_conf_threshold: 0.20
+distill_topk: 600
+distill_feature_levels: [0, 1]
+
+coffee3000_class_counts:
+  algal_spot: 501
+  brown_eye_spot: 606
+  healthy: 332
+  miner: 618
+  phoma: 709
+  powdery_mildew: 163
+
