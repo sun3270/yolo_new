@@ -41,23 +41,23 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "ContrastiveHead",
+    "EdgeLGMSFBridge",
+    "FastNormFuse2",
     "GhostBottleneck",
     "HGBlock",
     "HGStem",
     "ImagePoolingAttn",
+    "LDSConv",
     "Proto",
     "RepC3",
     "RepNCSPELAN4",
     "RepVGGDW",
     "ResNetLayer",
     "SCDown",
-    "TorchVision",
-    "LDSConv",
-    "TextureStreamP3",
     "SemanticStreamP5",
-    "FastNormFuse2",
     "SimAM",
-    "EdgeLGMSFBridge",
+    "TextureStreamP3",
+    "TorchVision",
 )
 
 
@@ -2196,4 +2196,6 @@ class EdgeLGMSFBridge(nn.Module):
         if texture.shape[-2:] != semantic.shape[-2:]:
             texture = F.interpolate(texture, size=semantic.shape[-2:], mode="nearest")
         return self.out(self.attn(self.fuse(texture, semantic)))
+
+
 # ---- YOLO26n-EdgeLite modules: end ----

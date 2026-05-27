@@ -10,7 +10,6 @@ import torch
 
 from ultralytics import YOLO
 
-
 ROOT = Path(__file__).resolve().parent
 WEIGHTS = ROOT / "yolo26n.pt"
 DATA = ROOT / "coffee3000" / "coffee3000.yaml"
