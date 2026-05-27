@@ -9,7 +9,6 @@ from pathlib import Path
 
 import torch
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 LOCAL_PARENT = EXP_ROOT / "local_ultralytics"
 CFG = EXP_ROOT / "configs" / "yolo26n_lgmsf_lite.yaml"
@@ -30,8 +29,8 @@ def main() -> None:
     sys.path.insert(0, str(LOCAL_PARENT))
     lines = ["# LGMSF-Lite Build Check Report", ""]
     try:
-        from ultralytics.nn.tasks import DetectionModel  # noqa: PLC0415
-        from ultralytics.nn.modules import LDSConv, LGMSFBridge  # noqa: F401, PLC0415
+        from ultralytics.nn.modules import LDSConv, LGMSFBridge  # noqa: F401
+        from ultralytics.nn.tasks import DetectionModel
 
         model = DetectionModel(str(CFG), ch=3, nc=6, verbose=False)
         info_result = model.info(verbose=True)
@@ -74,7 +73,7 @@ def main() -> None:
         )
         REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print(f"Build check passed: {REPORT}")
-    except Exception:  # noqa: BLE001 - report full build failure for debugging
+    except Exception:
         err = traceback.format_exc()
         lines.extend(["- Status: `failed`", "", "## Error", "", "```text", err, "```"])
         REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")

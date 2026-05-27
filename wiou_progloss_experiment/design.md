@@ -35,10 +35,10 @@ The current verified route is `YOLO26n-EdgeLite` without SimAM:
 Coffee3000 label counts show a real long-tail pattern:
 
 | split | algal_spot | brown_eye_spot | healthy | miner | phoma | powdery_mildew |
-|---|---:|---:|---:|---:|---:|---:|
-| train | 501 | 606 | 332 | 618 | 709 | 163 |
-| valid | 150 | 198 | 111 | 193 | 121 | 52 |
-| test | 46 | 58 | 162 | 51 | 72 | 14 |
+| ----- | ---------: | -------------: | ------: | ----: | ----: | -------------: |
+| train |        501 |            606 |     332 |   618 |   709 |            163 |
+| valid |        150 |            198 |     111 |   193 |   121 |             52 |
+| test  |         46 |             58 |     162 |    51 |    72 |             14 |
 
 The rarest training class is `powdery_mildew`, about 4.35x smaller than `phoma`.
 On test it is even more sparse. A box-only loss change will not fully solve this,
@@ -118,11 +118,11 @@ smooth(p) = p * p * (3 - 2 * p)
 
 Recommended schedule:
 
-| phase | epoch range | behavior |
-|---|---:|---|
-| warmup | 0-10% | keep baseline loss, no class reweighting |
-| transition | 10-60% | ramp WIoU focus and tail class weights |
-| consolidation | 60-100% | full WIoU + capped tail reweighting |
+| phase         | epoch range | behavior                                 |
+| ------------- | ----------: | ---------------------------------------- |
+| warmup        |       0-10% | keep baseline loss, no class reweighting |
+| transition    |      10-60% | ramp WIoU focus and tail class weights   |
+| consolidation |     60-100% | full WIoU + capped tail reweighting      |
 
 Classification weighting:
 
@@ -215,12 +215,12 @@ behavior. That keeps attribution clean:
 
 Run the following four experiments with identical training settings:
 
-| run | WIoU | ProgLoss class weights | purpose |
-|---|---|---|---|
-| baseline | off | off | verified EdgeLite result |
-| wiou_only | on | off | isolate localization effect |
-| prog_only | off | on | isolate long-tail classification effect |
-| wiou_progloss | on | on | final combined candidate |
+| run           | WIoU | ProgLoss class weights | purpose                                 |
+| ------------- | ---- | ---------------------- | --------------------------------------- |
+| baseline      | off  | off                    | verified EdgeLite result                |
+| wiou_only     | on   | off                    | isolate localization effect             |
+| prog_only     | off  | on                     | isolate long-tail classification effect |
+| wiou_progloss | on   | on                     | final combined candidate                |
 
 Primary metrics:
 
