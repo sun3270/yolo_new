@@ -6,7 +6,6 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 LOCAL_PKG = EXP_ROOT / "local_ultralytics" / "ultralytics"
 PATCHES = EXP_ROOT / "patches"
@@ -184,7 +183,9 @@ def append_block_modules() -> bool:
     if "class LGMSFBridge" in text:
         return False
     if "__all__ = (" in text:
-        text = add_to_string_tuple(text, "__all__ = (", ["ConvBNAct", "DWSeparableConv", "GhostConvLite", *MODULE_NAMES])
+        text = add_to_string_tuple(
+            text, "__all__ = (", ["ConvBNAct", "DWSeparableConv", "GhostConvLite", *MODULE_NAMES]
+        )
     BLOCK.write_text(text.rstrip() + LGMSF_BLOCK + "\n", encoding="utf-8")
     (PATCHES / "lgmsf_modules_block_append.py").write_text(LGMSF_BLOCK.lstrip(), encoding="utf-8")
     return True

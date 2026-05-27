@@ -14,12 +14,12 @@
 
 ## Build Metrics
 
-| model | params | GFLOPs | layers |
-|---|---:|---:|---:|
-| Native YOLO26n | 2,506,140 | 5.782528 | 260 |
-| YOLO26n-EdgeLite | 1,951,870 | 4.6626304 | 324 |
-| YOLO26n-EdgeLite-SimAM | 1,951,870 | 4.6626304 | 324 |
-| YOLO26n-LGMSF-Lite | 2,468,190 | 7.3143296 | 317 |
+| model                  |    params |    GFLOPs | layers |
+| ---------------------- | --------: | --------: | -----: |
+| Native YOLO26n         | 2,506,140 |  5.782528 |    260 |
+| YOLO26n-EdgeLite       | 1,951,870 | 4.6626304 |    324 |
+| YOLO26n-EdgeLite-SimAM | 1,951,870 | 4.6626304 |    324 |
+| YOLO26n-LGMSF-Lite     | 2,468,190 | 7.3143296 |    317 |
 
 Compared with native YOLO26n, EdgeLite reduces parameters by about `22.12%` and GFLOPs by about `19.37%`.
 Compared with the previous LGMSF-Lite, EdgeLite reduces parameters by about `20.92%` and GFLOPs by about `36.25%`.

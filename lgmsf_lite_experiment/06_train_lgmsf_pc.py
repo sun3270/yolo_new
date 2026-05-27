@@ -8,7 +8,6 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = EXP_ROOT.parent
 LOCAL_PARENT = EXP_ROOT / "local_ultralytics"
@@ -30,7 +29,7 @@ def git_commit() -> str:
     for exe in candidates:
         try:
             return subprocess.check_output([exe, "rev-parse", "--short", "HEAD"], cwd=PROJECT_ROOT, text=True).strip()
-        except Exception:  # noqa: BLE001 - report only best-effort metadata
+        except Exception:
             continue
     return "unknown"
 
@@ -76,7 +75,7 @@ def main() -> None:
     write_training_report(args)
     sys.path.insert(0, str(LOCAL_PARENT))
 
-    from ultralytics import YOLO  # noqa: PLC0415
+    from ultralytics import YOLO
 
     model = YOLO(str(CFG))
     if args.pretrained:

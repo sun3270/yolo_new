@@ -54,6 +54,8 @@ from ultralytics.nn.modules import (
     HGStem,
     ImagePoolingAttn,
     Index,
+    LDSConv,
+    LGMSFBridge,
     LRPCHead,
     Pose,
     Pose26,
@@ -72,8 +74,6 @@ from ultralytics.nn.modules import (
     YOLOESegment,
     YOLOESegment26,
     v10Detect,
-    LDSConv,
-    LGMSFBridge,
 )
 from ultralytics.utils import DEFAULT_CFG_DICT, LOGGER, YAML, colorstr, emojis
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
@@ -1661,7 +1661,7 @@ def parse_model(d, ch, verbose=True):
                 legacy = False
         elif m is LGMSFBridge:
             if not isinstance(f, list) or len(f) != 2:
-                raise ValueError('LGMSFBridge expects from=[P3_INDEX, P5_INDEX].')
+                raise ValueError("LGMSFBridge expects from=[P3_INDEX, P5_INDEX].")
             c3, c5 = ch[f[0]], ch[f[1]]
             c2 = args[0] if len(args) > 0 else c5
             args = [c3, c5, c2, *args[1:]]
