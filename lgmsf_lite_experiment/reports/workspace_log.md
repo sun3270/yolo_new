@@ -7,4 +7,3 @@
 - `reports/`: created
 - `local_ultralytics/`: created
 - `_sources/`: created
-
