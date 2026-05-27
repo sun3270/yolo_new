@@ -6,17 +6,9 @@
   "p3_downsample_index": 3,
   "p4_downsample_index": 5,
   "p5_downsample_index": 7,
-  "downsample_indices": [
-    3,
-    5,
-    7
-  ],
+  "downsample_indices": [3, 5, 7],
   "detect_index": 23,
-  "detect_from": [
-    16,
-    19,
-    22
-  ],
+  "detect_from": [16, 19, 22],
   "p5_channels": 256,
   "stride_by_index": {
     "0": 2,
@@ -51,12 +43,7 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 464,
-      "shape": [
-        1,
-        16,
-        320,
-        320
-      ],
+      "shape": [1, 16, 320, 320],
       "stride": 2
     },
     {
@@ -65,12 +52,7 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 4672,
-      "shape": [
-        1,
-        32,
-        160,
-        160
-      ],
+      "shape": [1, 32, 160, 160],
       "stride": 4
     },
     {
@@ -79,12 +61,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 6640,
-      "shape": [
-        1,
-        64,
-        160,
-        160
-      ],
+      "shape": [1, 64, 160, 160],
       "stride": 4
     },
     {
@@ -93,12 +70,7 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 36992,
-      "shape": [
-        1,
-        64,
-        80,
-        80
-      ],
+      "shape": [1, 64, 80, 80],
       "stride": 8
     },
     {
@@ -107,12 +79,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 26080,
-      "shape": [
-        1,
-        128,
-        80,
-        80
-      ],
+      "shape": [1, 128, 80, 80],
       "stride": 8
     },
     {
@@ -121,12 +88,7 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 147712,
-      "shape": [
-        1,
-        128,
-        40,
-        40
-      ],
+      "shape": [1, 128, 40, 40],
       "stride": 16
     },
     {
@@ -135,12 +97,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 87040,
-      "shape": [
-        1,
-        128,
-        40,
-        40
-      ],
+      "shape": [1, 128, 40, 40],
       "stride": 16
     },
     {
@@ -149,12 +106,7 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 295424,
-      "shape": [
-        1,
-        256,
-        20,
-        20
-      ],
+      "shape": [1, 256, 20, 20],
       "stride": 32
     },
     {
@@ -163,12 +115,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 346112,
-      "shape": [
-        1,
-        256,
-        20,
-        20
-      ],
+      "shape": [1, 256, 20, 20],
       "stride": 32
     },
     {
@@ -177,12 +124,7 @@
       "module": "SPPF",
       "type": "ultralytics.nn.modules.block.SPPF",
       "params": 164608,
-      "shape": [
-        1,
-        256,
-        20,
-        20
-      ],
+      "shape": [1, 256, 20, 20],
       "stride": 32
     },
     {
@@ -191,12 +133,7 @@
       "module": "C2PSA",
       "type": "ultralytics.nn.modules.block.C2PSA",
       "params": 249728,
-      "shape": [
-        1,
-        256,
-        20,
-        20
-      ],
+      "shape": [1, 256, 20, 20],
       "stride": 32
     },
     {
@@ -205,29 +142,16 @@
       "module": "Upsample",
       "type": "torch.nn.modules.upsampling.Upsample",
       "params": 0,
-      "shape": [
-        1,
-        256,
-        40,
-        40
-      ],
+      "shape": [1, 256, 40, 40],
       "stride": 16
     },
     {
       "index": 12,
-      "from": [
-        -1,
-        6
-      ],
+      "from": [-1, 6],
       "module": "Concat",
       "type": "ultralytics.nn.modules.conv.Concat",
       "params": 0,
-      "shape": [
-        1,
-        384,
-        40,
-        40
-      ],
+      "shape": [1, 384, 40, 40],
       "stride": 16
     },
     {
@@ -236,12 +160,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 119808,
-      "shape": [
-        1,
-        128,
-        40,
-        40
-      ],
+      "shape": [1, 128, 40, 40],
       "stride": 16
     },
     {
@@ -250,29 +169,16 @@
       "module": "Upsample",
       "type": "torch.nn.modules.upsampling.Upsample",
       "params": 0,
-      "shape": [
-        1,
-        128,
-        80,
-        80
-      ],
+      "shape": [1, 128, 80, 80],
       "stride": 8
     },
     {
       "index": 15,
-      "from": [
-        -1,
-        4
-      ],
+      "from": [-1, 4],
       "module": "Concat",
       "type": "ultralytics.nn.modules.conv.Concat",
       "params": 0,
-      "shape": [
-        1,
-        256,
-        80,
-        80
-      ],
+      "shape": [1, 256, 80, 80],
       "stride": 8
     },
     {
@@ -281,12 +187,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 34304,
-      "shape": [
-        1,
-        64,
-        80,
-        80
-      ],
+      "shape": [1, 64, 80, 80],
       "stride": 8
     },
     {
@@ -295,29 +196,16 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 36992,
-      "shape": [
-        1,
-        64,
-        40,
-        40
-      ],
+      "shape": [1, 64, 40, 40],
       "stride": 16
     },
     {
       "index": 18,
-      "from": [
-        -1,
-        13
-      ],
+      "from": [-1, 13],
       "module": "Concat",
       "type": "ultralytics.nn.modules.conv.Concat",
       "params": 0,
-      "shape": [
-        1,
-        192,
-        40,
-        40
-      ],
+      "shape": [1, 192, 40, 40],
       "stride": 16
     },
     {
@@ -326,12 +214,7 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 95232,
-      "shape": [
-        1,
-        128,
-        40,
-        40
-      ],
+      "shape": [1, 128, 40, 40],
       "stride": 16
     },
     {
@@ -340,29 +223,16 @@
       "module": "Conv",
       "type": "ultralytics.nn.modules.conv.Conv",
       "params": 147712,
-      "shape": [
-        1,
-        128,
-        20,
-        20
-      ],
+      "shape": [1, 128, 20, 20],
       "stride": 32
     },
     {
       "index": 21,
-      "from": [
-        -1,
-        10
-      ],
+      "from": [-1, 10],
       "module": "Concat",
       "type": "ultralytics.nn.modules.conv.Concat",
       "params": 0,
-      "shape": [
-        1,
-        384,
-        20,
-        20
-      ],
+      "shape": [1, 384, 20, 20],
       "stride": 32
     },
     {
@@ -371,93 +241,34 @@
       "module": "C3k2",
       "type": "ultralytics.nn.modules.block.C3k2",
       "params": 463104,
-      "shape": [
-        1,
-        256,
-        20,
-        20
-      ],
+      "shape": [1, 256, 20, 20],
       "stride": 32
     },
     {
       "index": 23,
-      "from": [
-        16,
-        19,
-        22
-      ],
+      "from": [16, 19, 22],
       "module": "Detect",
       "type": "ultralytics.nn.modules.head.Detect",
       "params": 243516,
       "shape": [
-        [
-          1,
-          300,
-          6
-        ],
+        [1, 300, 6],
         {
           "one2many": {
-            "boxes": [
-              1,
-              4,
-              8400
-            ],
-            "scores": [
-              1,
-              6,
-              8400
-            ],
+            "boxes": [1, 4, 8400],
+            "scores": [1, 6, 8400],
             "feats": [
-              [
-                1,
-                64,
-                80,
-                80
-              ],
-              [
-                1,
-                128,
-                40,
-                40
-              ],
-              [
-                1,
-                256,
-                20,
-                20
-              ]
+              [1, 64, 80, 80],
+              [1, 128, 40, 40],
+              [1, 256, 20, 20]
             ]
           },
           "one2one": {
-            "boxes": [
-              1,
-              4,
-              8400
-            ],
-            "scores": [
-              1,
-              6,
-              8400
-            ],
+            "boxes": [1, 4, 8400],
+            "scores": [1, 6, 8400],
             "feats": [
-              [
-                1,
-                64,
-                80,
-                80
-              ],
-              [
-                1,
-                128,
-                40,
-                40
-              ],
-              [
-                1,
-                256,
-                20,
-                20
-              ]
+              [1, 64, 80, 80],
+              [1, 128, 40, 40],
+              [1, 256, 20, 20]
             ]
           }
         }
