@@ -9,7 +9,6 @@ from pathlib import Path
 
 import torch
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 ROOT = EXP_ROOT.parent
 LOCAL_ULTRALYTICS = EXP_ROOT / "local_ultralytics"
@@ -57,7 +56,7 @@ def main() -> None:
     sys.path.insert(0, str(LOCAL_ULTRALYTICS))
     lines = ["# YOLO26n-EdgeLite Build Compare Report", ""]
     try:
-        from ultralytics.nn.tasks import DetectionModel  # noqa: PLC0415
+        from ultralytics.nn.tasks import DetectionModel
 
         configs = [
             ("native", EXP_ROOT / "configs" / "yolo26n_original_copy.yaml"),
@@ -79,7 +78,7 @@ def main() -> None:
         lines.extend(["", "## JSON", "", "```json", json.dumps(results, indent=2), "```"])
         REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
         print(f"Build compare passed: {REPORT}")
-    except Exception:  # noqa: BLE001
+    except Exception:
         err = traceback.format_exc()
         lines.extend(["- Status: failed", "", "```text", err, "```"])
         REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
