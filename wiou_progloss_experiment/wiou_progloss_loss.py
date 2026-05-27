@@ -15,7 +15,6 @@ import torch.nn.functional as F
 from ultralytics.utils.loss import BboxLoss, E2ELoss, v8DetectionLoss
 from ultralytics.utils.metrics import bbox_iou
 from ultralytics.utils.tal import bbox2dist, make_anchors
-
 from wiou_progloss_experiment.loss_extensions import (
     build_progloss_class_weights,
     classification_loss,
@@ -23,7 +22,6 @@ from wiou_progloss_experiment.loss_extensions import (
     progress_blend,
     wiou_box_loss,
 )
-
 
 DEFAULT_LOSS_CONFIG = {
     "wiou_enabled": True,
@@ -131,7 +129,9 @@ class v8DetectionWIoUProgLoss(v8DetectionLoss):
         self.loss_progress = min(self.loss_epoch / max(int(getattr(self.hyp, "epochs", 1)) - 1, 1), 1.0)
         self.bbox_loss.set_progress(self.loss_progress)
 
-    def _classification_loss(self, pred_scores: torch.Tensor, target_scores: torch.Tensor, dtype: torch.dtype) -> torch.Tensor:
+    def _classification_loss(
+        self, pred_scores: torch.Tensor, target_scores: torch.Tensor, dtype: torch.dtype
+    ) -> torch.Tensor:
         """Compute classification loss through the experiment helper."""
         return classification_loss(
             self.bce,
@@ -214,7 +214,7 @@ class E2EWIoUProgLoss(E2ELoss):
 
 def patch_detection_model_loss() -> None:
     """Patch DetectionModel in the current process to use the experiment loss."""
-    from ultralytics.nn.tasks import DetectionModel  # noqa: PLC0415
+    from ultralytics.nn.tasks import DetectionModel
 
     def init_criterion(self):
         return E2EWIoUProgLoss(self) if getattr(self, "end2end", False) else v8DetectionWIoUProgLoss(self)
