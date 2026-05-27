@@ -16,7 +16,6 @@ from pathlib import Path
 
 import torch
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 ROOT = EXP_ROOT.parent
 EDGE_ROOT = ROOT / "edgelite_experiment"
@@ -32,7 +31,6 @@ sys.path.insert(0, str(LOCAL_ULTRALYTICS))
 
 from ultralytics import YOLO  # noqa: E402
 from ultralytics.utils import YAML  # noqa: E402
-
 from wiou_progloss_experiment.wiou_progloss_loss import (  # noqa: E402
     DEFAULT_LOSS_CONFIG,
     configure_wiou_progloss,

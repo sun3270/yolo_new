@@ -8,7 +8,6 @@ from pathlib import Path
 
 import yaml
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 STRUCTURE_JSON = EXP_ROOT / "reports" / "yolo26n_structure.json"
 ORIGINAL_YAML = EXP_ROOT / "configs" / "yolo26n_original_copy.yaml"
