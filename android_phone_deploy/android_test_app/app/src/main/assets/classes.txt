@@ -1,0 +1,6 @@
+algal_spot
+brown_eye_spot
+healthy
+miner
+phoma
+powdery_mildew

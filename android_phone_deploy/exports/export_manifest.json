@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-05-09T11:58:31",
+  "input_size": "640x640",
+  "class_names": [
+    "algal_spot",
+    "brown_eye_spot",
+    "healthy",
+    "miner",
+    "phoma",
+    "powdery_mildew"
+  ],
+  "results": [
+    {
+      "slug": "01_yolo26n_base",
+      "name": "YOLO26n base",
+      "source": "E:\\ultralytics-8.4.43\\run_down\\yolo26n_coffee3000_laptop-4\\weights\\best.pt",
+      "pt": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\01_yolo26n_base\\01_yolo26n_base.pt",
+      "pt_size": 5402515,
+      "formats": {
+        "onnx": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\01_yolo26n_base\\01_yolo26n_base.onnx",
+          "size": 9761902
+        },
+        "ncnn": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\01_yolo26n_base\\01_yolo26n_base_ncnn_model",
+          "param": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\01_yolo26n_base\\01_yolo26n_base_ncnn_model\\model.ncnn.param",
+          "bin": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\01_yolo26n_base\\01_yolo26n_base_ncnn_model\\model.ncnn.bin",
+          "param_size": 26388,
+          "bin_size": 9605232
+        }
+      }
+    },
+    {
+      "slug": "02_yolo26n_edgelite",
+      "name": "YOLO26n EdgeLite",
+      "source": "E:\\ultralytics-8.4.43\\run_down\\yolo26n_edgelite_coffee3000\\weights\\best.pt",
+      "pt": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\02_yolo26n_edgelite\\02_yolo26n_edgelite.pt",
+      "pt_size": 4349844,
+      "formats": {
+        "onnx": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\02_yolo26n_edgelite\\02_yolo26n_edgelite.onnx",
+          "size": 7555714
+        },
+        "ncnn": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\02_yolo26n_edgelite\\02_yolo26n_edgelite_ncnn_model",
+          "param": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\02_yolo26n_edgelite\\02_yolo26n_edgelite_ncnn_model\\model.ncnn.param",
+          "bin": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\02_yolo26n_edgelite\\02_yolo26n_edgelite_ncnn_model\\model.ncnn.bin",
+          "param_size": 30149,
+          "bin_size": 7383484
+        }
+      }
+    },
+    {
+      "slug": "03_yolo26n_edgelite_simam",
+      "name": "YOLO26n EdgeLite + SimAM",
+      "source": "E:\\ultralytics-8.4.43\\run_down\\yolo26n_edgelite_simam_coffee3000\\weights\\best.pt",
+      "pt": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\03_yolo26n_edgelite_simam\\03_yolo26n_edgelite_simam.pt",
+      "pt_size": 4354900,
+      "formats": {
+        "onnx": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\03_yolo26n_edgelite_simam\\03_yolo26n_edgelite_simam.onnx",
+          "size": 7557778
+        },
+        "ncnn": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\03_yolo26n_edgelite_simam\\03_yolo26n_edgelite_simam_ncnn_model",
+          "param": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\03_yolo26n_edgelite_simam\\03_yolo26n_edgelite_simam_ncnn_model\\model.ncnn.param",
+          "bin": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\03_yolo26n_edgelite_simam\\03_yolo26n_edgelite_simam_ncnn_model\\model.ncnn.bin",
+          "param_size": 31115,
+          "bin_size": 7383484
+        }
+      }
+    },
+    {
+      "slug": "04_yolo26n_edgelite_wiou_progloss",
+      "name": "YOLO26n EdgeLite + WIoU/ProgLoss",
+      "source": "E:\\ultralytics-8.4.43\\run_down\\yolo26n_edgelite_wiou_progloss_coffee30003\\weights\\best.pt",
+      "pt": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\04_yolo26n_edgelite_wiou_progloss\\04_yolo26n_edgelite_wiou_progloss.pt",
+      "pt_size": 4366548,
+      "formats": {
+        "onnx": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\04_yolo26n_edgelite_wiou_progloss\\04_yolo26n_edgelite_wiou_progloss.onnx",
+          "size": 7555714
+        },
+        "ncnn": {
+          "status": "ok",
+          "path": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\04_yolo26n_edgelite_wiou_progloss\\04_yolo26n_edgelite_wiou_progloss_ncnn_model",
+          "param": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\04_yolo26n_edgelite_wiou_progloss\\04_yolo26n_edgelite_wiou_progloss_ncnn_model\\model.ncnn.param",
+          "bin": "E:\\ultralytics-8.4.43\\android_phone_deploy\\exports\\04_yolo26n_edgelite_wiou_progloss\\04_yolo26n_edgelite_wiou_progloss_ncnn_model\\model.ncnn.bin",
+          "param_size": 30150,
+          "bin_size": 7383484
+        }
+      }
+    }
+  ]
+}

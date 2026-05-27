@@ -1,0 +1,9 @@
+﻿phone,model_id,n,over_200_count,over_200_rate,over_160_count,max_total_ms
+23127PN0CC,01_yolo26n_base,200,0,0.0,0,129.616094
+23127PN0CC,02_yolo26n_edgelite,200,0,0.0,0,88.018386
+23127PN0CC,03_yolo26n_edgelite_simam,200,0,0.0,0,90.240833
+23127PN0CC,04_yolo26n_edgelite_wiou_progloss,200,0,0.0,0,98.87974
+M2012K10C,01_yolo26n_base,200,1,0.005,13,207.728
+M2012K10C,02_yolo26n_edgelite,200,1,0.005,11,341.409539
+M2012K10C,03_yolo26n_edgelite_simam,200,4,0.02,11,306.937846
+M2012K10C,04_yolo26n_edgelite_wiou_progloss,200,6,0.03,17,319.421461

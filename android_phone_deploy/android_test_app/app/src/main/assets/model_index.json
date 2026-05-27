@@ -1,0 +1,27 @@
+{
+  "input_size": [640, 640],
+  "class_names_file": "classes.txt",
+  "models": [
+    {
+      "id": "01_yolo26n_base",
+      "display_name": "YOLO26n base",
+      "onnx": "models/01_yolo26n_base/model.onnx"
+    },
+    {
+      "id": "02_yolo26n_edgelite",
+      "display_name": "YOLO26n EdgeLite",
+      "onnx": "models/02_yolo26n_edgelite/model.onnx"
+    },
+    {
+      "id": "03_yolo26n_edgelite_simam",
+      "display_name": "YOLO26n EdgeLite + SimAM",
+      "onnx": "models/03_yolo26n_edgelite_simam/model.onnx"
+    },
+    {
+      "id": "04_yolo26n_edgelite_wiou_progloss",
+      "display_name": "YOLO26n EdgeLite + WIoU/ProgLoss",
+      "onnx": "models/04_yolo26n_edgelite_wiou_progloss/model.onnx"
+    }
+  ]
+}
+

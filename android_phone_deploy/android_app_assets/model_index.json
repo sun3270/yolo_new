@@ -1,0 +1,30 @@
+{
+  "input_size": [640, 640],
+  "class_names_file": "classes.txt",
+  "models": [
+    {
+      "id": "01_yolo26n_base",
+      "display_name": "YOLO26n base",
+      "ncnn_param": "01_yolo26n_base/model.ncnn.param",
+      "ncnn_bin": "01_yolo26n_base/model.ncnn.bin"
+    },
+    {
+      "id": "02_yolo26n_edgelite",
+      "display_name": "YOLO26n EdgeLite",
+      "ncnn_param": "02_yolo26n_edgelite/model.ncnn.param",
+      "ncnn_bin": "02_yolo26n_edgelite/model.ncnn.bin"
+    },
+    {
+      "id": "03_yolo26n_edgelite_simam",
+      "display_name": "YOLO26n EdgeLite + SimAM",
+      "ncnn_param": "03_yolo26n_edgelite_simam/model.ncnn.param",
+      "ncnn_bin": "03_yolo26n_edgelite_simam/model.ncnn.bin"
+    },
+    {
+      "id": "04_yolo26n_edgelite_wiou_progloss",
+      "display_name": "YOLO26n EdgeLite + WIoU/ProgLoss",
+      "ncnn_param": "04_yolo26n_edgelite_wiou_progloss/model.ncnn.param",
+      "ncnn_bin": "04_yolo26n_edgelite_wiou_progloss/model.ncnn.bin"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "input_size": [640, 640],
+  "class_names": [
+    "algal_spot",
+    "brown_eye_spot",
+    "healthy",
+    "miner",
+    "phoma",
+    "powdery_mildew"
+  ],
+  "models": [
+    {
+      "id": "01_yolo26n_base",
+      "display_name": "YOLO26n base",
+      "onnx": "01_yolo26n_base/01_yolo26n_base.onnx",
+      "ncnn_dir": "01_yolo26n_base/01_yolo26n_base_ncnn_model",
+      "ncnn_param": "01_yolo26n_base/01_yolo26n_base_ncnn_model/model.ncnn.param",
+      "ncnn_bin": "01_yolo26n_base/01_yolo26n_base_ncnn_model/model.ncnn.bin"
+    },
+    {
+      "id": "02_yolo26n_edgelite",
+      "display_name": "YOLO26n EdgeLite",
+      "onnx": "02_yolo26n_edgelite/02_yolo26n_edgelite.onnx",
+      "ncnn_dir": "02_yolo26n_edgelite/02_yolo26n_edgelite_ncnn_model",
+      "ncnn_param": "02_yolo26n_edgelite/02_yolo26n_edgelite_ncnn_model/model.ncnn.param",
+      "ncnn_bin": "02_yolo26n_edgelite/02_yolo26n_edgelite_ncnn_model/model.ncnn.bin"
+    },
+    {
+      "id": "03_yolo26n_edgelite_simam",
+      "display_name": "YOLO26n EdgeLite + SimAM",
+      "onnx": "03_yolo26n_edgelite_simam/03_yolo26n_edgelite_simam.onnx",
+      "ncnn_dir": "03_yolo26n_edgelite_simam/03_yolo26n_edgelite_simam_ncnn_model",
+      "ncnn_param": "03_yolo26n_edgelite_simam/03_yolo26n_edgelite_simam_ncnn_model/model.ncnn.param",
+      "ncnn_bin": "03_yolo26n_edgelite_simam/03_yolo26n_edgelite_simam_ncnn_model/model.ncnn.bin"
+    },
+    {
+      "id": "04_yolo26n_edgelite_wiou_progloss",
+      "display_name": "YOLO26n EdgeLite + WIoU/ProgLoss",
+      "onnx": "04_yolo26n_edgelite_wiou_progloss/04_yolo26n_edgelite_wiou_progloss.onnx",
+      "ncnn_dir": "04_yolo26n_edgelite_wiou_progloss/04_yolo26n_edgelite_wiou_progloss_ncnn_model",
+      "ncnn_param": "04_yolo26n_edgelite_wiou_progloss/04_yolo26n_edgelite_wiou_progloss_ncnn_model/model.ncnn.param",
+      "ncnn_bin": "04_yolo26n_edgelite_wiou_progloss/04_yolo26n_edgelite_wiou_progloss_ncnn_model/model.ncnn.bin"
+    }
+  ]
+}
