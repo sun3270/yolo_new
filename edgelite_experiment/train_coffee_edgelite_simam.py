@@ -11,7 +11,6 @@ from pathlib import Path
 
 import torch
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 ROOT = EXP_ROOT.parent
 LOCAL_ULTRALYTICS = EXP_ROOT / "local_ultralytics"

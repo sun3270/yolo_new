@@ -136,4 +136,6 @@ class LGMSFBridge(nn.Module):
         if texture.shape[-2:] != semantic.shape[-2:]:
             texture = F.interpolate(texture, size=semantic.shape[-2:], mode="nearest")
         return self.attn(self.fuse(texture, semantic))
+
+
 # ---- LGMSF-Lite modules: end ----
