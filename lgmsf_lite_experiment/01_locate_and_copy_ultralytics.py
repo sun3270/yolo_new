@@ -21,7 +21,6 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 
-
 REQUIRED_VERSION = "8.4.14"
 EXP_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = EXP_ROOT.parent
@@ -98,7 +97,12 @@ def validate_clean_package(pkg: Path) -> tuple[bool, list[str]]:
 
 
 def archive_candidates() -> list[Path]:
-    patterns = ("ultralytics-8.4.14*.zip", "ultralytics-8.4.14*.whl", "ultralytics-8.4.14*.tar.gz", "ultralytics-8.4.14*.tgz")
+    patterns = (
+        "ultralytics-8.4.14*.zip",
+        "ultralytics-8.4.14*.whl",
+        "ultralytics-8.4.14*.tar.gz",
+        "ultralytics-8.4.14*.tgz",
+    )
     found: list[Path] = []
     search_roots = [SOURCES, DOWNLOADS, PROJECT_ROOT.parent, Path.home() / "Downloads"]
     for pattern in patterns:
@@ -127,7 +131,16 @@ def extract_archive(archive: Path) -> Path:
 
 def try_pip_download() -> list[Path]:
     DOWNLOADS.mkdir(parents=True, exist_ok=True)
-    cmd = [sys.executable, "-m", "pip", "download", f"ultralytics=={REQUIRED_VERSION}", "--no-deps", "--dest", str(DOWNLOADS)]
+    cmd = [
+        sys.executable,
+        "-m",
+        "pip",
+        "download",
+        f"ultralytics=={REQUIRED_VERSION}",
+        "--no-deps",
+        "--dest",
+        str(DOWNLOADS),
+    ]
     subprocess.run(cmd, check=True)
     return archive_candidates()
 
@@ -177,7 +190,7 @@ def find_clean_source() -> tuple[Path, str, list[str]]:
                 if ok:
                     return pkg, f"pip download {archive.name}", attempts
                 attempts.append(f"download source rejected: {pkg} ({'; '.join(reasons)})")
-    except Exception as exc:  # noqa: BLE001 - report all acquisition failures clearly
+    except Exception as exc:
         attempts.append(f"pip download failed: {exc}")
 
     raise RuntimeError("No clean ultralytics 8.4.14 source with YOLO26 was found.\n" + "\n".join(attempts))

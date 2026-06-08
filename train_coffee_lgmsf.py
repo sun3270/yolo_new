@@ -15,7 +15,6 @@ from pathlib import Path
 
 import torch
 
-
 ROOT = Path(__file__).resolve().parent
 LGMSF_ROOT = ROOT / "lgmsf_lite_experiment"
 LOCAL_ULTRALYTICS = LGMSF_ROOT / "local_ultralytics"
