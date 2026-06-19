@@ -41,26 +41,26 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "ContrastiveHead",
+    "ConvBNAct",
+    "DWSeparableConv",
+    "FastNormFuse2",
     "GhostBottleneck",
+    "GhostConvLite",
     "HGBlock",
     "HGStem",
     "ImagePoolingAttn",
+    "LDSConv",
+    "LGMSFBridge",
     "Proto",
     "RepC3",
     "RepNCSPELAN4",
     "RepVGGDW",
     "ResNetLayer",
     "SCDown",
-    "TorchVision",
-    "ConvBNAct",
-    "DWSeparableConv",
-    "GhostConvLite",
-    "LDSConv",
-    "LGMSFBridge",
-    "TextureBranch",
     "SemanticBranch",
     "SimAM",
-    "FastNormFuse2",
+    "TextureBranch",
+    "TorchVision",
 )
 
 
@@ -2075,6 +2075,7 @@ class RealNVP(nn.Module):
         z, log_det = self.backward_p(x)
         return self.prior.log_prob(z) + log_det
 
+
 # ---- LGMSF-Lite modules: begin ----
 class ConvBNAct(nn.Module):
     """Small Conv-BN-activation helper used by LGMSF-Lite."""
@@ -2213,5 +2214,6 @@ class LGMSFBridge(nn.Module):
         if texture.shape[-2:] != semantic.shape[-2:]:
             texture = F.interpolate(texture, size=semantic.shape[-2:], mode="nearest")
         return self.attn(self.fuse(texture, semantic))
-# ---- LGMSF-Lite modules: end ----
 
+
+# ---- LGMSF-Lite modules: end ----

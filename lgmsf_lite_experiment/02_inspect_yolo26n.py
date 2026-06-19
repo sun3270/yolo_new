@@ -11,7 +11,6 @@ from pathlib import Path
 import torch
 import yaml
 
-
 EXP_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = EXP_ROOT.parent
 LOCAL_PARENT = EXP_ROOT / "local_ultralytics"
@@ -23,7 +22,7 @@ JSON_REPORT = EXP_ROOT / "reports" / "yolo26n_structure.json"
 
 def import_local_ultralytics():
     sys.path.insert(0, str(LOCAL_PARENT))
-    from ultralytics.nn.tasks import DetectionModel  # noqa: PLC0415
+    from ultralytics.nn.tasks import DetectionModel
 
     return DetectionModel
 

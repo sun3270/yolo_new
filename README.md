@@ -10,11 +10,11 @@
 
 ## 当前版本
 
-| 版本 | 分支或标签 | 说明 |
-|---|---|---|
-| `v1.0` | tag | 初始可复现实验版本 |
-| `v2.0` | tag / `main` 起点 | EdgeLite + WIoU/ProgLoss 隔离实验版本 |
-| `v3.0` | tag | P5Slim-512 第二阶段轻量化版本 |
+| 版本   | 分支或标签                                    | 说明                                                                 |
+| ------ | --------------------------------------------- | -------------------------------------------------------------------- |
+| `v1.0` | tag                                           | 初始可复现实验版本                                                   |
+| `v2.0` | tag / `main` 起点                             | EdgeLite + WIoU/ProgLoss 隔离实验版本                                |
+| `v3.0` | tag                                           | P5Slim-512 第二阶段轻量化版本                                        |
 | `v3.1` | tag / `codex/v3-p5slim512-second-lightweight` | 当前上传版本，包含 Android 部署文件夹、进度报告、NCNN 资源和日志分析 |
 
 GitHub 首页默认显示 `main` 分支；如果要查看最新 3.1 内容，请切换到：
@@ -33,14 +33,14 @@ v3.1
 
 任务是 6 类咖啡叶病害目标检测：
 
-| 类别编号 | 类别名 |
-|---:|---|
-| 0 | `algal_spot` |
-| 1 | `brown_eye_spot` |
-| 2 | `healthy` |
-| 3 | `miner` |
-| 4 | `phoma` |
-| 5 | `powdery_mildew` |
+| 类别编号 | 类别名           |
+| -------: | ---------------- |
+|        0 | `algal_spot`     |
+|        1 | `brown_eye_spot` |
+|        2 | `healthy`        |
+|        3 | `miner`          |
+|        4 | `phoma`          |
+|        5 | `powdery_mildew` |
 
 数据配置文件位于：
 
@@ -60,36 +60,36 @@ YOLO26n-EdgeLite + WIoU/ProgLoss
 
 验证集最佳结果：
 
-| 指标 | 结果 |
-|---|---:|
-| 参数量 | 1,951,870 |
-| GFLOPs | 4.6626 |
-| best epoch | 272 |
-| Precision | 95.60% |
-| Recall | 94.18% |
-| mAP50 | 97.675% |
-| mAP50-95 | 92.179% |
+| 指标       |      结果 |
+| ---------- | --------: |
+| 参数量     | 1,951,870 |
+| GFLOPs     |    4.6626 |
+| best epoch |       272 |
+| Precision  |    95.60% |
+| Recall     |    94.18% |
+| mAP50      |   97.675% |
+| mAP50-95   |   92.179% |
 
 结构对比：
 
-| 模型 | 参数量 | GFLOPs | 层数 |
-|---|---:|---:|---:|
-| 原始 YOLO26n | 2,506,140 | 5.7825 | 260 |
-| YOLO26n-EdgeLite | 1,951,870 | 4.6626 | 324 |
+| 模型             |    参数量 | GFLOPs | 层数 |
+| ---------------- | --------: | -----: | ---: |
+| 原始 YOLO26n     | 2,506,140 | 5.7825 |  260 |
+| YOLO26n-EdgeLite | 1,951,870 | 4.6626 |  324 |
 
 EdgeLite 相比原始 YOLO26n 减少约 22.12% 参数量，GFLOPs 减少约 19.37%。
 
 ## 目录说明
 
-| 路径 | 说明 |
-|---|---|
-| `coffee3000/` | 数据集配置和说明 |
-| `edgelite_experiment/` | EdgeLite 结构实验、配置和本地 Ultralytics 修改版 |
-| `wiou_progloss_experiment/` | WIoU + ProgLoss 损失函数实验，原生 `loss.py` 保持可用 |
-| `p5slim512_distill_experiment/` | P5Slim-512 第二阶段轻量化蒸馏实验 |
-| `android_phone_deploy/` | Android 部署准备、NCNN 资源、测试工程和手机日志分析 |
-| `URP_YOLO_progress_report_2026-05-27.md` | 当前阶段进度报告 |
-| `yolocoffee-v3.0.bundle` | v3.0 打包归档 |
+| 路径                                     | 说明                                                  |
+| ---------------------------------------- | ----------------------------------------------------- |
+| `coffee3000/`                            | 数据集配置和说明                                      |
+| `edgelite_experiment/`                   | EdgeLite 结构实验、配置和本地 Ultralytics 修改版      |
+| `wiou_progloss_experiment/`              | WIoU + ProgLoss 损失函数实验，原生 `loss.py` 保持可用 |
+| `p5slim512_distill_experiment/`          | P5Slim-512 第二阶段轻量化蒸馏实验                     |
+| `android_phone_deploy/`                  | Android 部署准备、NCNN 资源、测试工程和手机日志分析   |
+| `URP_YOLO_progress_report_2026-05-27.md` | 当前阶段进度报告                                      |
+| `yolocoffee-v3.0.bundle`                 | v3.0 打包归档                                         |
 
 ## 主要实验入口
 
@@ -141,12 +141,12 @@ android_phone_deploy/android_app_assets/
 
 包含 4 个 NCNN 模型：
 
-| 模型 ID | 说明 | NCNN bin 大小 |
-|---|---|---:|
-| `01_yolo26n_base` | 原始 YOLO26n | 9.16 MB |
-| `02_yolo26n_edgelite` | EdgeLite | 7.04 MB |
-| `03_yolo26n_edgelite_simam` | EdgeLite + SimAM | 7.04 MB |
-| `04_yolo26n_edgelite_wiou_progloss` | EdgeLite + WIoU/ProgLoss | 7.04 MB |
+| 模型 ID                             | 说明                     | NCNN bin 大小 |
+| ----------------------------------- | ------------------------ | ------------: |
+| `01_yolo26n_base`                   | 原始 YOLO26n             |       9.16 MB |
+| `02_yolo26n_edgelite`               | EdgeLite                 |       7.04 MB |
+| `03_yolo26n_edgelite_simam`         | EdgeLite + SimAM         |       7.04 MB |
+| `04_yolo26n_edgelite_wiou_progloss` | EdgeLite + WIoU/ProgLoss |       7.04 MB |
 
 一致性验证结果显示 ONNX 和 NCNN 均通过与 PyTorch 输出的对比，其中当前推荐模型 `YOLO26n EdgeLite + WIoU/ProgLoss` 的 NCNN 对比结果为 PASS。
 
