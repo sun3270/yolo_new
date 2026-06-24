@@ -1,6 +1,6 @@
 # Flat loss switches for the root-level WIoU + ProgLoss experiment.
-# These values are loaded by wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
-# and then applied to wiou_progloss_experiment/wiou_progloss_loss.py.
+# Training scripts choose the architecture separately, then apply these values
+# to wiou_progloss_experiment/wiou_progloss_loss.py at runtime.
 
 loss_name: wiou_progloss
 
@@ -21,22 +21,23 @@ progloss_tail_power: 0.5
 progloss_tail_lambda_max: 0.8
 progloss_tail_weight_min: 0.75
 progloss_tail_weight_max: 1.8
-progloss_class_counts: [501, 606, 332, 618, 709, 163]
-
-coffee3000_class_counts:
-  algal_spot: 501
-  brown_eye_spot: 606
-  healthy: 332
-  miner: 618
-  phoma: 709
-  powdery_mildew: 163
+# Leave empty here. Training scripts auto-count current train labels and pass
+# the result to ProgLoss as progloss_class_counts.
+progloss_class_counts:
 
 recommended_training:
-  base_script: edgelite_experiment/train_coffee_edgelite.py
-  new_script: wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+  script: wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
   custom_loss_module: wiou_progloss_experiment/wiou_progloss_loss.py
-  new_run_name: yolo26n_edgelite_wiou_progloss_coffee3000
+  default_arch: edgelite_bibridge
+  supported_arch:
+    - native
+    - edgelite
+    - edgelite_simam
+    - edgelite_bibridge
+    - edgelite_simam_bibridge
+  default_data: coffee_self_sum/coffee_self_sum.yaml
+  new_run_name: yolo26n_edgelite_bibridge_wiou_progloss_coffee_self_sum
   smoke_epochs: 3
-  full_epochs: 200
-  keep_architecture: true
-  keep_simam_disabled: true
+  full_epochs: 300
+  default_imgsz: 960
+  default_batch: 64

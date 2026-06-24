@@ -1,15 +1,16 @@
-"""Train YOLO26n-EdgeLite on coffee_self_sum.
+"""Train YOLO26n-EdgeLite-BiBridge on coffee_self_sum.
 
 Usage:
-    python edgelite_experiment/train_coffee_edgelite.py
+    python edgelite_experiment/train_coffee_edgelite_bibridge.py
 
 Optional environment variables:
-    EDGE_DATA=path/to/data.yaml
-    EDGE_EPOCHS=300
-    EDGE_IMGSZ=960
-    EDGE_BATCH=64
-    EDGE_WORKERS=8
-    EDGE_RUN_NAME=name
+    EDGE_BIBRIDGE_SIMAM=1       Use yolo26n_edgelite_simam_bibridge.yaml.
+    EDGE_DATA=path/to/data.yaml Override the dataset yaml.
+    EDGE_EPOCHS=300             Override epochs.
+    EDGE_IMGSZ=960              Override image size.
+    EDGE_BATCH=64               Override batch size.
+    EDGE_WORKERS=8              Override dataloader workers.
+    EDGE_RUN_NAME=name          Override run name.
 """
 
 from __future__ import annotations
@@ -24,13 +25,23 @@ import torch
 EXP_ROOT = Path(__file__).resolve().parent
 ROOT = EXP_ROOT.parent
 LOCAL_ULTRALYTICS = EXP_ROOT / "local_ultralytics"
-CFG = EXP_ROOT / "configs" / "yolo26n_edgelite.yaml"
 WEIGHTS = ROOT / "yolo26n.pt"
-DATA = Path(os.environ.get("EDGE_DATA", ROOT / "coffee_self_sum" / "coffee_self_sum.yaml"))
 
 sys.path.insert(0, str(LOCAL_ULTRALYTICS))
 
 from ultralytics import YOLO  # noqa: E402
+
+
+def env_flag(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    return default if value is None or value == "" else int(value)
 
 
 def select_cuda_device() -> int:
@@ -53,17 +64,23 @@ def format_metric(results, key: str) -> str:
         return "N/A"
 
 
-def env_int(name: str, default: int) -> int:
-    value = os.environ.get(name)
-    return default if value is None or value == "" else int(value)
-
-
 def main():
     device = select_cuda_device()
-    if not DATA.exists():
-        raise FileNotFoundError(f"Dataset yaml not found: {DATA}")
+    use_simam = env_flag("EDGE_BIBRIDGE_SIMAM")
+    cfg_name = "yolo26n_edgelite_simam_bibridge.yaml" if use_simam else "yolo26n_edgelite_bibridge.yaml"
+    cfg = EXP_ROOT / "configs" / cfg_name
+    data = Path(os.getenv("EDGE_DATA", str(ROOT / "coffee_self_sum" / "coffee_self_sum.yaml")))
+    if not data.exists():
+        raise FileNotFoundError(f"Dataset yaml not found: {data}")
 
-    model = YOLO(str(CFG))
+    run_name = os.getenv(
+        "EDGE_RUN_NAME",
+        "yolo26n_edgelite_simam_bibridge_coffee_self_sum"
+        if use_simam
+        else "yolo26n_edgelite_bibridge_coffee_self_sum",
+    )
+
+    model = YOLO(str(cfg))
     if WEIGHTS.exists():
         model = model.load(str(WEIGHTS))
         print(f"Loaded pretrained weights: {WEIGHTS}")
@@ -72,7 +89,7 @@ def main():
     model.info(verbose=False)
 
     results = model.train(
-        data=str(DATA),
+        data=str(data),
         epochs=env_int("EDGE_EPOCHS", 300),
         imgsz=env_int("EDGE_IMGSZ", 960),
         batch=env_int("EDGE_BATCH", 64),
@@ -80,7 +97,7 @@ def main():
         workers=env_int("EDGE_WORKERS", 8),
         device=device,
         project=str(ROOT / "runs" / "train"),
-        name=os.environ.get("EDGE_RUN_NAME", "yolo26n_edgelite_coffee_self_sum"),
+        name=run_name,
         amp=True,
         patience=30,
         save_period=20,

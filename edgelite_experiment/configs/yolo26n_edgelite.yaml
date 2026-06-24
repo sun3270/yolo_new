@@ -1,6 +1,6 @@
 # YOLO26n-EdgeLite: edge-oriented P3 texture and P5 semantic weighted fusion.
 
-nc: 6
+nc: 9
 end2end: True
 reg_max: 1
 scale: n

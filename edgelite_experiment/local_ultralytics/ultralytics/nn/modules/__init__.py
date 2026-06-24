@@ -64,6 +64,9 @@ from .block import (
     FastNormFuse2,
     SimAM,
     EdgeLGMSFBridge,
+    P5ToP3SemanticFuse,
+    ELTEB,
+    ELTEBLite,
     TorchVision,
 )
 from .conv import (
@@ -198,5 +201,8 @@ __all__ = (
     "YOLOESegment",
     "YOLOESegment26",
     "EdgeLGMSFBridge",
+    "P5ToP3SemanticFuse",
+    "ELTEB",
+    "ELTEBLite",
     "v10Detect",
 )

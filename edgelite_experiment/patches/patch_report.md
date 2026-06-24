@@ -12,8 +12,10 @@
 - `FastNormFuse2`
 - `SimAM`
 - `EdgeLGMSFBridge`
+- `P5ToP3SemanticFuse`
 
 ## parse_model Changes
 
 - `LDSConv` is handled as a standard base module.
 - `EdgeLGMSFBridge` has a dedicated two-input branch for `[P3, P5]`.
+- `P5ToP3SemanticFuse` has a dedicated two-input branch for `[P3, P5]`.

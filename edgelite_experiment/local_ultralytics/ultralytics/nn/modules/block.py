@@ -58,6 +58,9 @@ __all__ = (
     "FastNormFuse2",
     "SimAM",
     "EdgeLGMSFBridge",
+    "P5ToP3SemanticFuse",
+    "ELTEB",
+    "ELTEBLite",
 )
 
 
@@ -2196,4 +2199,163 @@ class EdgeLGMSFBridge(nn.Module):
         if texture.shape[-2:] != semantic.shape[-2:]:
             texture = F.interpolate(texture, size=semantic.shape[-2:], mode="nearest")
         return self.out(self.attn(self.fuse(texture, semantic)))
+
+
+class P5ToP3SemanticFuse(nn.Module):
+    """Light P5 semantic feedback fused into the P3 feature map."""
+
+    def __init__(self, c3, c5, c_out=None, reduction=8, init_gate=-2.0):
+        super().__init__()
+        c_out = c3 if c_out is None else c_out
+        c_mid = max(8, int(c_out // reduction))
+        self.p3_reduce = ConvBNAct(c3, c_mid, k=1, s=1)
+        self.p5_reduce = ConvBNAct(c5, c_mid, k=1, s=1)
+        self.fuse = FastNormFuse2()
+        self.out = ConvBNAct(c_mid, c_out, k=1, s=1)
+        self.shortcut = nn.Identity() if c3 == c_out else ConvBNAct(c3, c_out, k=1, s=1, act=False)
+        self.gate = nn.Parameter(torch.tensor(float(init_gate), dtype=torch.float32))
+
+    def forward(self, xs):
+        p3, p5 = xs
+        p3_semantic = self.p3_reduce(p3)
+        p5_semantic = self.p5_reduce(p5)
+        if p5_semantic.shape[-2:] != p3_semantic.shape[-2:]:
+            p5_semantic = F.interpolate(p5_semantic, size=p3_semantic.shape[-2:], mode="nearest")
+        refine = self.out(self.fuse(p3_semantic, p5_semantic))
+        gate = torch.sigmoid(self.gate).to(dtype=refine.dtype)
+        return self.shortcut(p3) + gate * refine
+
+
+class _ELTEBTexture(nn.Module):
+    """Texture enhancement path fused back into the P3 feature map."""
+
+    def __init__(
+        self,
+        c_img,
+        c_p3,
+        texture_channels=16,
+        fusion="add",
+        fusion_alpha=0.0,
+        unsharp_alpha=0.35,
+        mode="full",
+    ):
+        super().__init__()
+        if fusion not in {"add", "concat"}:
+            raise ValueError("ELTEB fusion must be 'add' or 'concat'.")
+        if mode not in {"full", "lite"}:
+            raise ValueError("ELTEB mode must be 'full' or 'lite'.")
+        self.fusion = fusion
+        self.mode = mode
+        self.fusion_alpha = nn.Parameter(torch.tensor(float(fusion_alpha), dtype=torch.float32))
+        self.unsharp_alpha = nn.Parameter(torch.tensor(float(unsharp_alpha), dtype=torch.float32))
+
+        feature_channels = 3 if mode == "lite" else c_img * 2 + 3
+        self.compress = ConvBNAct(feature_channels, texture_channels, k=1, s=1)
+        self.project = ConvBNAct(texture_channels, c_p3, k=1, s=1, act=False)
+        self.fuse = nn.Conv2d(c_p3 * 2, c_p3, kernel_size=1, stride=1, bias=False) if fusion == "concat" else nn.Identity()
+        if fusion == "concat":
+            self._init_concat_identity(c_p3)
+
+        sobel_x = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=torch.float32)
+        sobel_y = torch.tensor([[-1, -2, -1], [0, 0, 0], [1, 2, 1]], dtype=torch.float32)
+        laplace = torch.tensor([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=torch.float32)
+        self.register_buffer("sobel_x", sobel_x.view(1, 1, 3, 3))
+        self.register_buffer("sobel_y", sobel_y.view(1, 1, 3, 3))
+        self.register_buffer("laplace", laplace.view(1, 1, 3, 3))
+
+    def _init_concat_identity(self, c_p3):
+        """Make concat fusion start as an exact identity on the original P3 feature."""
+        with torch.no_grad():
+            self.fuse.weight.zero_()
+            idx = torch.arange(c_p3)
+            self.fuse.weight[idx, idx, 0, 0] = 1.0
+
+    @staticmethod
+    def _gray(x):
+        if x.shape[1] >= 3:
+            return x[:, 0:1] * 0.299 + x[:, 1:2] * 0.587 + x[:, 2:3] * 0.114
+        return x.mean(1, keepdim=True)
+
+    def _filter(self, x, kernel):
+        return F.conv2d(x, kernel.to(device=x.device, dtype=x.dtype), padding=1)
+
+    def _features(self, img):
+        gray = self._gray(img)
+        sx = self._filter(gray, self.sobel_x)
+        sy = self._filter(gray, self.sobel_y)
+        sobel = torch.tanh(torch.sqrt(sx.square() + sy.square() + 1e-6))
+        lap = torch.tanh(torch.abs(self._filter(gray, self.laplace)))
+        if self.mode == "lite":
+            return torch.cat((gray, sobel, lap), 1)
+        blur = F.avg_pool2d(img, kernel_size=5, stride=1, padding=2)
+        unsharp = img + self.unsharp_alpha.to(dtype=img.dtype) * (img - blur)
+        return torch.cat((img, gray, sobel, lap, unsharp), 1)
+
+    def forward(self, xs):
+        img, p3 = xs
+        if img.shape[-2:] != p3.shape[-2:]:
+            img = F.interpolate(img, size=p3.shape[-2:], mode="bilinear", align_corners=False)
+        texture = self.project(self.compress(self._features(img)))
+        scale = self.fusion_alpha.to(dtype=p3.dtype)
+        if self.fusion == "concat":
+            return self.fuse(torch.cat((p3, scale * texture), 1))
+        return p3 + scale * texture
+
+
+class ELTEB(C3k2):
+    """Early Lesion Texture Enhancement Branch for the P3 stage."""
+
+    texture_mode = "full"
+
+    def __init__(
+        self,
+        c_img,
+        c1,
+        c2,
+        n=1,
+        c3k=False,
+        e=0.5,
+        texture_channels=16,
+        fusion="add",
+        fusion_alpha=0.0,
+        unsharp_alpha=0.35,
+        attn=False,
+        g=1,
+        shortcut=True,
+    ):
+        super().__init__(c1, c2, n, c3k, e, attn, g, shortcut)
+        self.texture_enhance = _ELTEBTexture(
+            c_img, c2, texture_channels, fusion, fusion_alpha, unsharp_alpha, mode=self.texture_mode
+        )
+
+    def forward(self, xs):
+        img, x = xs
+        p3 = super().forward(x)
+        return self.texture_enhance((img, p3))
+
+
+class ELTEBLite(ELTEB):
+    """Lightweight ELTEB variant using gray, Sobel, and Laplacian cues only."""
+
+    texture_mode = "lite"
+
+    def __init__(
+        self,
+        c_img,
+        c1,
+        c2,
+        n=1,
+        c3k=False,
+        e=0.5,
+        texture_channels=8,
+        fusion="add",
+        fusion_alpha=0.0,
+        unsharp_alpha=0.25,
+        attn=False,
+        g=1,
+        shortcut=True,
+    ):
+        super().__init__(
+            c_img, c1, c2, n, c3k, e, texture_channels, fusion, fusion_alpha, unsharp_alpha, attn, g, shortcut
+        )
 # ---- YOLO26n-EdgeLite modules: end ----

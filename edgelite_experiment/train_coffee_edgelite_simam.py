@@ -1,11 +1,20 @@
-"""Train YOLO26n-EdgeLite-SimAM on coffee3000.
+"""Train YOLO26n-EdgeLite-SimAM on coffee_self_sum.
 
 Usage:
     python edgelite_experiment/train_coffee_edgelite_simam.py
+
+Optional environment variables:
+    EDGE_DATA=path/to/data.yaml
+    EDGE_EPOCHS=300
+    EDGE_IMGSZ=960
+    EDGE_BATCH=64
+    EDGE_WORKERS=8
+    EDGE_SIMAM_RUN_NAME=name
 """
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -17,7 +26,7 @@ ROOT = EXP_ROOT.parent
 LOCAL_ULTRALYTICS = EXP_ROOT / "local_ultralytics"
 CFG = EXP_ROOT / "configs" / "yolo26n_edgelite_simam.yaml"
 WEIGHTS = ROOT / "yolo26n.pt"
-DATA = ROOT / "coffee3000" / "coffee3000.yaml"
+DATA = Path(os.environ.get("EDGE_DATA", ROOT / "coffee_self_sum" / "coffee_self_sum.yaml"))
 
 sys.path.insert(0, str(LOCAL_ULTRALYTICS))
 
@@ -44,8 +53,15 @@ def format_metric(results, key: str) -> str:
         return "N/A"
 
 
+def env_int(name: str, default: int) -> int:
+    value = os.environ.get(name)
+    return default if value is None or value == "" else int(value)
+
+
 def main():
     device = select_cuda_device()
+    if not DATA.exists():
+        raise FileNotFoundError(f"Dataset yaml not found: {DATA}")
 
     model = YOLO(str(CFG))
     if WEIGHTS.exists():
@@ -57,14 +73,14 @@ def main():
 
     results = model.train(
         data=str(DATA),
-        epochs=200,
-        imgsz=640,
-        batch=32,
+        epochs=env_int("EDGE_EPOCHS", 300),
+        imgsz=env_int("EDGE_IMGSZ", 960),
+        batch=env_int("EDGE_BATCH", 64),
         cache="ram",
-        workers=2,
+        workers=env_int("EDGE_WORKERS", 8),
         device=device,
         project=str(ROOT / "runs" / "train"),
-        name="yolo26n_edgelite_simam_coffee3000",
+        name=os.environ.get("EDGE_SIMAM_RUN_NAME", "yolo26n_edgelite_simam_coffee_self_sum"),
         amp=True,
         patience=30,
         save_period=20,

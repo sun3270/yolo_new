@@ -6,31 +6,41 @@ This design is managed from the repository root:
 
 `wiou_progloss_experiment/`
 
-The implementation target is still the tested no-SimAM EdgeLite route:
+The implementation target is the isolated local Ultralytics package plus an
+architecture-selected training entry:
 
-- Model YAML: `edgelite_experiment/configs/yolo26n_edgelite.yaml`
-- Baseline training script: `edgelite_experiment/train_coffee_edgelite.py`
+- Default model YAML: `edgelite_experiment/configs/yolo26n_edgelite_bibridge.yaml`
+- Native comparison YAML: `edgelite_experiment/configs/yolo26n_original_copy.yaml`
+- EdgeLite comparison YAML: `edgelite_experiment/configs/yolo26n_edgelite.yaml`
+- Training script: `wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`
 - EdgeLite local package: `edgelite_experiment/local_ultralytics`
 - Package that should remain unchanged: `ultralytics/`
 - Native local loss file that should remain unchanged:
   `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py`
 
-The isolated training entry is:
+The isolated training entry supports:
 
-`wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`
+- `WIOU_PROGLOSS_ARCH=native`
+- `WIOU_PROGLOSS_ARCH=edgelite`
+- `WIOU_PROGLOSS_ARCH=edgelite_simam`
+- `WIOU_PROGLOSS_ARCH=edgelite_bibridge`
+- `WIOU_PROGLOSS_ARCH=edgelite_simam_bibridge`
 
 That script should prepend `edgelite_experiment/local_ultralytics` to `sys.path`,
 configure the experiment loss from this folder, and temporarily patch
 `DetectionModel.init_criterion` for the current training process only.
 
-## Current Baseline
+## Current Architecture Set
 
-The current verified route is `YOLO26n-EdgeLite` without SimAM:
+The current comparison set is:
 
-- Uses `edgelite_experiment/local_ultralytics`, so the root package is isolated.
-- Uses `end2end: True`, so training combines one-to-many and one-to-one losses.
-- Uses `reg_max: 1`, so DFL is disabled. The reported `dfl_loss` branch is an L1-style box distance branch.
-- Current box loss is CIoU-based: `loss_iou = (1 - iou) * target_score_weight`.
+- `native`: original YOLO26n + WIoU/ProgLoss.
+- `edgelite`: original EdgeLite + WIoU/ProgLoss.
+- `edgelite_bibridge`: latest bidirectional EdgeLite + WIoU/ProgLoss, default.
+
+All current custom YAMLs use `end2end: True` and `reg_max: 1`, so training
+combines one-to-many and one-to-one losses while the reported `dfl_loss` branch
+is an L1-style distance branch rather than true DFL.
 
 Coffee3000 label counts show a real long-tail pattern:
 
@@ -175,7 +185,8 @@ using the EdgeLite local package as an imported dependency:
    `wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`
 
 This keeps the native loss available for future ablations and avoids scattering
-experimental implementation across the local Ultralytics package.
+experimental loss implementation across the local Ultralytics package. The
+architecture is selected by the training script, not by the loss module.
 
 ## Experiment Config
 
@@ -196,24 +207,29 @@ progloss_tail_power: 0.5
 progloss_tail_lambda_max: 0.8
 progloss_tail_weight_min: 0.75
 progloss_tail_weight_max: 1.8
-progloss_class_counts: [501, 606, 332, 618, 709, 163]
+progloss_class_counts: null  # filled automatically from current train labels
 ```
 
 These values are loaded from `wiou_progloss_experiment/loss_config.yaml` by the
 experiment training script, not through the native Ultralytics default config.
+The per-class counts are not fixed in the YAML; the training entry counts the
+current dataset's train labels before enabling ProgLoss.
 
-## Why Not Change Architecture
+## Architecture Handling
 
-The last EdgeLite result already improved compute cost by reducing parameters and
-GFLOPs. This experiment should keep architecture frozen and only change loss
-behavior. That keeps attribution clean:
+WIoU + ProgLoss itself does not change model layers. It can be attached to native
+YOLO, EdgeLite, or EdgeLite-BiBridge by choosing `WIOU_PROGLOSS_ARCH`. This keeps
+loss behavior attributable while still allowing the latest improved EdgeLite
+structure to be tested:
 
-- If metrics improve, the gain is from loss design.
-- If metrics regress, the EdgeLite architecture is still preserved as a stable baseline.
+- Compare `native` against `native + WIoU/ProgLoss`.
+- Compare `edgelite` against `edgelite + WIoU/ProgLoss`.
+- Compare `edgelite_bibridge` against `edgelite_bibridge + WIoU/ProgLoss`.
 
 ## Ablation Plan
 
-Run the following four experiments with identical training settings:
+Run the following loss ablations within each selected architecture using
+identical training settings:
 
 | run | WIoU | ProgLoss class weights | purpose |
 |---|---|---|---|

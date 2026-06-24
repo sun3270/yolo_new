@@ -1,4 +1,4 @@
-"""Custom WIoU + ProgLoss criterion for the EdgeLite experiment.
+"""Custom WIoU + ProgLoss criterion for YOLO26n architecture ablations.
 
 This module keeps the experimental loss outside
 `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py`, so the native
@@ -42,7 +42,7 @@ DEFAULT_LOSS_CONFIG = {
     "progloss_tail_lambda_max": 0.8,
     "progloss_tail_weight_min": 0.75,
     "progloss_tail_weight_max": 1.8,
-    "progloss_class_counts": [501, 606, 332, 618, 709, 163],
+    "progloss_class_counts": None,
 }
 ACTIVE_LOSS_CONFIG = DEFAULT_LOSS_CONFIG.copy()
 

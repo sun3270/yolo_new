@@ -8,3 +8,4 @@
 # - FastNormFuse2
 # - SimAM
 # - EdgeLGMSFBridge
+# - P5ToP3SemanticFuse

@@ -1,7 +1,7 @@
-"""Train YOLO26n-EdgeLite on coffee_self_sum.
+"""Train YOLO26n-EdgeLite-SimAM-BiBridge on coffee_self_sum.
 
 Usage:
-    python edgelite_experiment/train_coffee_edgelite.py
+    python edgelite_experiment/train_coffee_edgelite_simam_bibridge.py
 
 Optional environment variables:
     EDGE_DATA=path/to/data.yaml
@@ -9,7 +9,7 @@ Optional environment variables:
     EDGE_IMGSZ=960
     EDGE_BATCH=64
     EDGE_WORKERS=8
-    EDGE_RUN_NAME=name
+    EDGE_SIMAM_BIBRIDGE_RUN_NAME=name
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ import torch
 EXP_ROOT = Path(__file__).resolve().parent
 ROOT = EXP_ROOT.parent
 LOCAL_ULTRALYTICS = EXP_ROOT / "local_ultralytics"
-CFG = EXP_ROOT / "configs" / "yolo26n_edgelite.yaml"
+CFG = EXP_ROOT / "configs" / "yolo26n_edgelite_simam_bibridge.yaml"
 WEIGHTS = ROOT / "yolo26n.pt"
 DATA = Path(os.environ.get("EDGE_DATA", ROOT / "coffee_self_sum" / "coffee_self_sum.yaml"))
 
@@ -60,6 +60,8 @@ def env_int(name: str, default: int) -> int:
 
 def main():
     device = select_cuda_device()
+    if not CFG.exists():
+        raise FileNotFoundError(f"Model yaml not found: {CFG}")
     if not DATA.exists():
         raise FileNotFoundError(f"Dataset yaml not found: {DATA}")
 
@@ -80,7 +82,7 @@ def main():
         workers=env_int("EDGE_WORKERS", 8),
         device=device,
         project=str(ROOT / "runs" / "train"),
-        name=os.environ.get("EDGE_RUN_NAME", "yolo26n_edgelite_coffee_self_sum"),
+        name=os.environ.get("EDGE_SIMAM_BIBRIDGE_RUN_NAME", "yolo26n_edgelite_simam_bibridge_coffee_self_sum"),
         amp=True,
         patience=30,
         save_period=20,

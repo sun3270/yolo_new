@@ -1,16 +1,21 @@
-"""Train YOLO26n variants with WIoU + ProgLoss.
+"""Train YOLO26n ELTEB variants.
 
 Usage:
-    python wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py
+    python elteb_experiment/train_coffee_v4_elteb.py
 
 Variant selection:
-    WIOU_PROGLOSS_ARCH=native
-    WIOU_PROGLOSS_ARCH=edgelite
-    WIOU_PROGLOSS_ARCH=edgelite_bibridge
-    WIOU_PROGLOSS_ARCH=edgelite_simam
-    WIOU_PROGLOSS_ARCH=edgelite_simam_bibridge
+    V4_ELTEB_ARCH=native
+    V4_ELTEB_ARCH=edgelite
+    V4_ELTEB_ARCH=edgelite_bibridge
 
-The default is the latest EdgeLite-BiBridge structure.
+    V4_ELTEB_VARIANT=elteb
+    V4_ELTEB_VARIANT=elteb_lite
+
+Optional loss:
+    V4_ELTEB_LOSS=native
+    V4_ELTEB_LOSS=wiou_progloss
+
+The default is the latest EdgeLite-BiBridge + ELTEB structure with native loss.
 """
 
 from __future__ import annotations
@@ -25,30 +30,35 @@ import torch
 EXP_ROOT = Path(__file__).resolve().parent
 ROOT = EXP_ROOT.parent
 EDGE_ROOT = ROOT / "edgelite_experiment"
+WIOU_ROOT = ROOT / "wiou_progloss_experiment"
 LOCAL_ULTRALYTICS = EDGE_ROOT / "local_ultralytics"
 WEIGHTS = ROOT / "yolo26n.pt"
-LOSS_CONFIG = EXP_ROOT / "loss_config.yaml"
+LOSS_CONFIG = WIOU_ROOT / "loss_config.yaml"
 
-ARCH_VARIANTS = {
-    "native": {
-        "cfg": EDGE_ROOT / "configs" / "yolo26n_original_copy.yaml",
-        "name": "yolo26n_native_wiou_progloss_coffee_self_sum",
+VARIANTS = {
+    ("native", "elteb"): {
+        "cfg": EXP_ROOT / "configs" / "yolo26n_native_elteb.yaml",
+        "name": "v4_native_elteb_coffee_self_sum",
     },
-    "edgelite": {
-        "cfg": EDGE_ROOT / "configs" / "yolo26n_edgelite.yaml",
-        "name": "yolo26n_edgelite_wiou_progloss_coffee_self_sum",
+    ("native", "elteb_lite"): {
+        "cfg": EXP_ROOT / "configs" / "yolo26n_native_elteb_lite.yaml",
+        "name": "v4_native_elteb_lite_coffee_self_sum",
     },
-    "edgelite_simam": {
-        "cfg": EDGE_ROOT / "configs" / "yolo26n_edgelite_simam.yaml",
-        "name": "yolo26n_edgelite_simam_wiou_progloss_coffee_self_sum",
+    ("edgelite", "elteb"): {
+        "cfg": EXP_ROOT / "configs" / "yolo26n_edgelite_elteb.yaml",
+        "name": "v4_edgelite_elteb_coffee_self_sum",
     },
-    "edgelite_bibridge": {
-        "cfg": EDGE_ROOT / "configs" / "yolo26n_edgelite_bibridge.yaml",
-        "name": "yolo26n_edgelite_bibridge_wiou_progloss_coffee_self_sum",
+    ("edgelite", "elteb_lite"): {
+        "cfg": EXP_ROOT / "configs" / "yolo26n_edgelite_elteb_lite.yaml",
+        "name": "v4_edgelite_elteb_lite_coffee_self_sum",
     },
-    "edgelite_simam_bibridge": {
-        "cfg": EDGE_ROOT / "configs" / "yolo26n_edgelite_simam_bibridge.yaml",
-        "name": "yolo26n_edgelite_simam_bibridge_wiou_progloss_coffee_self_sum",
+    ("edgelite_bibridge", "elteb"): {
+        "cfg": EXP_ROOT / "configs" / "yolo26n_edgelite_bibridge_elteb.yaml",
+        "name": "v4_edgelite_bibridge_elteb_coffee_self_sum",
+    },
+    ("edgelite_bibridge", "elteb_lite"): {
+        "cfg": EXP_ROOT / "configs" / "yolo26n_edgelite_bibridge_elteb_lite.yaml",
+        "name": "v4_edgelite_bibridge_elteb_lite_coffee_self_sum",
     },
 }
 
@@ -92,14 +102,21 @@ def format_metric(results, key: str) -> str:
         return "N/A"
 
 
-def resolve_arch() -> tuple[str, dict]:
-    arch = os.environ.get("WIOU_PROGLOSS_ARCH", "edgelite_bibridge").lower()
-    if arch not in ARCH_VARIANTS:
-        raise ValueError(f"Unknown WIOU_PROGLOSS_ARCH={arch!r}. Choose one of {sorted(ARCH_VARIANTS)}.")
-    return arch, ARCH_VARIANTS[arch]
+def resolve_variant() -> tuple[str, str, dict]:
+    arch = os.environ.get("V4_ELTEB_ARCH", "edgelite_bibridge").lower()
+    branch = os.environ.get("V4_ELTEB_VARIANT", "elteb").lower()
+    key = (arch, branch)
+    if key not in VARIANTS:
+        valid = [f"{a}+{b}" for a, b in sorted(VARIANTS)]
+        raise ValueError(f"Unknown V4_ELTEB_ARCH/V4_ELTEB_VARIANT={key!r}. Choose one of {valid}.")
+    return arch, branch, VARIANTS[key]
 
 
-def configure_loss(data: Path) -> None:
+def configure_optional_loss(loss_name: str, data: Path) -> None:
+    if loss_name == "native":
+        return
+    if loss_name != "wiou_progloss":
+        raise ValueError("V4_ELTEB_LOSS must be 'native' or 'wiou_progloss'.")
     loss_config = YAML.load(LOSS_CONFIG) if LOSS_CONFIG.exists() else {}
     loss_overrides = {k: loss_config.get(k) for k in DEFAULT_LOSS_CONFIG if k in loss_config}
     class_counts = count_train_labels(data)
@@ -111,19 +128,22 @@ def configure_loss(data: Path) -> None:
 
 
 def main():
-    device = select_cuda_device()
-    arch, variant = resolve_arch()
-    data = Path(os.environ.get("WIOU_PROGLOSS_DATA", ROOT / "coffee_self_sum" / "coffee_self_sum.yaml"))
+    arch, branch, variant = resolve_variant()
+    loss_name = os.environ.get("V4_ELTEB_LOSS", "native").lower()
+    data = Path(os.environ.get("V4_ELTEB_DATA", ROOT / "coffee_self_sum" / "coffee_self_sum.yaml"))
     if not data.exists():
         raise FileNotFoundError(f"Dataset yaml not found: {data}")
     cfg = Path(variant["cfg"])
     if not cfg.exists():
         raise FileNotFoundError(f"Model yaml not found: {cfg}")
 
-    configure_loss(data)
+    device = select_cuda_device()
+    configure_optional_loss(loss_name, data)
 
-    run_name = os.environ.get("WIOU_PROGLOSS_RUN_NAME", str(variant["name"]))
+    run_name = os.environ.get("V4_ELTEB_RUN_NAME", str(variant["name"]) if loss_name == "native" else f"{variant['name']}_{loss_name}")
     print(f"Active architecture: {arch}")
+    print(f"ELTEB variant: {branch}")
+    print(f"Loss: {loss_name}")
     print(f"Model YAML: {cfg}")
     print(f"Data YAML: {data}")
 
@@ -137,11 +157,11 @@ def main():
 
     results = model.train(
         data=str(data),
-        epochs=env_int("WIOU_PROGLOSS_EPOCHS", 300),
-        imgsz=env_int("WIOU_PROGLOSS_IMGSZ", 960),
-        batch=env_int("WIOU_PROGLOSS_BATCH", 64),
+        epochs=env_int("V4_ELTEB_EPOCHS", 300),
+        imgsz=env_int("V4_ELTEB_IMGSZ", 960),
+        batch=env_int("V4_ELTEB_BATCH", 64),
         cache="ram",
-        workers=env_int("WIOU_PROGLOSS_WORKERS", 8),
+        workers=env_int("V4_ELTEB_WORKERS", 8),
         device=device,
         project=str(ROOT / "runs" / "train"),
         name=run_name,
@@ -163,6 +183,8 @@ def main():
 
     print("\n=== Training complete ===")
     print(f"Architecture:  {arch}")
+    print(f"ELTEB variant: {branch}")
+    print(f"Loss:          {loss_name}")
     print(f"Best mAP50:    {format_metric(results, 'metrics/mAP50(B)')}")
     print(f"Best mAP50-95: {format_metric(results, 'metrics/mAP50-95(B)')}")
     print(f"Best weights:  {results.save_dir / 'weights' / 'best.pt'}")

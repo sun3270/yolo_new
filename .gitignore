@@ -154,9 +154,24 @@ wandb/
 .DS_Store
 
 # Local datasets
+/coffee3000/
+/coffee_self/
+/coffee_self - */
+/coffee_self_de/
+/coffee_self_merged/
+/coffee_self_minority_aug/
+/coffee_self_sum/
+/leaf_100/
 /coffee3000/train/
 /coffee3000/valid/
 /coffee3000/test/
+
+# Local generated analysis and preprocessing outputs
+/analysis_temp/
+/coffee_original_hash_report/
+/coffee_self_duplicate_report/
+/_analysis_zips/
+docx_render_qa_urp_report/
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
 weights/

@@ -8,6 +8,7 @@
 - [x] Keep native `edgelite_experiment/local_ultralytics/ultralytics/utils/loss.py` available for baseline tests.
 - [x] Implement experimental loss code inside `wiou_progloss_experiment/`.
 - [x] Add the new train script at `wiou_progloss_experiment/train_coffee_edgelite_wiou_progloss.py`.
+- [x] Support `native`, `edgelite`, and `edgelite_bibridge` architecture selection from the loss train script.
 
 ## Code Changes
 
@@ -22,6 +23,7 @@
 - [x] Patch `DetectionModel.init_criterion` only in the experiment training process.
 - [x] Propagate epoch progress through custom `E2EWIoUProgLoss.update()`.
 - [x] Keep WIoU and ProgLoss outside the native loss file unless explicitly enabled by the experiment script.
+- [x] Keep architecture selection outside the loss module so the same loss can attach to native YOLO and EdgeLite variants.
 
 ## First Smoke Test
 
@@ -30,6 +32,7 @@
 - [x] Run custom WIoU bbox-loss smoke test.
 - [x] Run custom ProgLoss classification smoke test.
 - [x] Confirm `loss_config.yaml` loads and patches the experiment criterion in process.
+- [x] Confirm the loss patch can initialize on native YOLO, EdgeLite, and EdgeLite-BiBridge.
 - [ ] Train for 3 epochs with WIoU disabled and ProgLoss disabled to confirm baseline still works.
 - [ ] Train for 3 epochs with WIoU only.
 - [ ] Train for 3 epochs with ProgLoss only.

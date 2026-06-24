@@ -49,6 +49,9 @@ from ultralytics.nn.modules import (
     DWConvTranspose2d,
     LDSConv,
     EdgeLGMSFBridge,
+    P5ToP3SemanticFuse,
+    ELTEB,
+    ELTEBLite,
     Focus,
     GhostBottleneck,
     GhostConv,
@@ -172,12 +175,17 @@ class BaseModel(torch.nn.Module):
         Returns:
             (torch.Tensor): The last output of the model.
         """
+        x0 = x
         y, dt, embeddings = [], [], []  # outputs
         embed = frozenset(embed) if embed is not None else {-1}
         max_idx = max(embed)
         for m in self.model:
             if m.f != -1:  # if not from previous layer
-                x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
+                x = (
+                    y[m.f]
+                    if isinstance(m.f, int)
+                    else [x if j == -1 else x0 if j == -2 else y[j] for j in m.f]
+                )  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
             x = m(x)  # run
@@ -1564,6 +1572,7 @@ def parse_model(d, ch, verbose=True):
 
     if verbose:
         LOGGER.info(f"\n{'':>3}{'from':>20}{'n':>3}{'params':>10}  {'module':<45}{'arguments':<30}")
+    input_ch = ch
     ch = [ch]
     layers, save, c2 = [], [], ch[-1]  # layers, savelist, ch out
     base_modules = frozenset(
@@ -1659,11 +1668,29 @@ def parse_model(d, ch, verbose=True):
                     args.extend((True, 1.2))
             if m is C2fCIB:
                 legacy = False
+        elif m in frozenset({ELTEB, ELTEBLite}):
+            if not isinstance(f, list) or len(f) != 2:
+                raise ValueError("ELTEB expects from=[-2, P3_INPUT_INDEX].")
+            c_img = input_ch if f[0] == -2 else ch[f[0]]
+            c1, c2 = ch[f[1]], args[0]
+            if c2 != nc:
+                c2 = make_divisible(min(c2, max_channels) * width, 8)
+            if len(args) > 1 and scale in "mlx":
+                args[1] = True
+            args = [c_img, c1, c2, n, *args[1:]]
+            n = 1
+            legacy = False
         elif m is EdgeLGMSFBridge:
             if not isinstance(f, list) or len(f) != 2:
                 raise ValueError("EdgeLGMSFBridge expects from=[P3_INDEX, P5_INDEX].")
             c3, c5 = ch[f[0]], ch[f[1]]
             c2 = args[0] if len(args) > 0 else c5
+            args = [c3, c5, c2, *args[1:]]
+        elif m is P5ToP3SemanticFuse:
+            if not isinstance(f, list) or len(f) != 2:
+                raise ValueError("P5ToP3SemanticFuse expects from=[P3_INDEX, P5_INDEX].")
+            c3, c5 = ch[f[0]], ch[f[1]]
+            c2 = args[0] if len(args) > 0 else c3
             args = [c3, c5, c2, *args[1:]]
         elif m is AIFI:
             args = [ch[f], *args]
@@ -1724,7 +1751,7 @@ def parse_model(d, ch, verbose=True):
         m_.i, m_.f, m_.type = i, f, t  # attach index, 'from' index, type
         if verbose:
             LOGGER.info(f"{i:>3}{f!s:>20}{n_:>3}{m_.np:10.0f}  {t:<45}{args!s:<30}")  # print
-        save.extend(x % i for x in ([f] if isinstance(f, int) else f) if x != -1)  # append to savelist
+        save.extend(x % i for x in ([f] if isinstance(f, int) else f) if x >= 0)  # append to savelist
         layers.append(m_)
         if i == 0:
             ch = []
