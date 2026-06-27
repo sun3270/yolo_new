@@ -17,6 +17,8 @@ from coffee_v4_training.train import (  # noqa: E402
     ELTEB_CONTROL_EXPERIMENTS,
     EXPERIMENTS,
     MAIN_EXPERIMENTS,
+    RECALL_EXPERIMENTS,
+    STRONG_EXPERIMENTS,
 )
 
 
@@ -24,6 +26,8 @@ GROUPS = {
     "core": CORE_EXPERIMENTS,
     "main": MAIN_EXPERIMENTS,
     "elteb": ELTEB_CONTROL_EXPERIMENTS,
+    "recall": RECALL_EXPERIMENTS,
+    "strong": STRONG_EXPERIMENTS,
     "full": tuple(EXPERIMENTS),
 }
 
@@ -51,6 +55,7 @@ def append_common_args(command: list[str], args: argparse.Namespace) -> None:
         ("--workers", args.workers),
         ("--cache", args.cache),
         ("--preprocess-output", args.preprocess_output),
+        ("--path-remap", args.path_remap),
     )
     for flag, value in options:
         if value is not None:
@@ -81,6 +86,7 @@ def main() -> None:
     parser.add_argument("--cache", default=None)
     parser.add_argument("--preprocess-output", default=None)
     parser.add_argument("--overwrite-preprocess", action="store_true")
+    parser.add_argument("--path-remap", default=None)
     args = parser.parse_args()
 
     failures: list[tuple[str, int]] = []

@@ -57,6 +57,18 @@ def xyxy_iou_distance_gain(
     return raw_iou, distance_gain
 
 
+def normalized_wasserstein_loss(box1: torch.Tensor, box2: torch.Tensor, constant: float = 12.8, eps: float = 1e-7) -> torch.Tensor:
+    """Return NWD loss for aligned xyxy boxes, useful for tiny-box sensitivity checks."""
+    b1_x1, b1_y1, b1_x2, b1_y2 = box1.chunk(4, -1)
+    b2_x1, b2_y1, b2_x2, b2_y2 = box2.chunk(4, -1)
+    b1_cx, b1_cy = (b1_x1 + b1_x2) / 2, (b1_y1 + b1_y2) / 2
+    b2_cx, b2_cy = (b2_x1 + b2_x2) / 2, (b2_y1 + b2_y2) / 2
+    b1_w, b1_h = (b1_x2 - b1_x1).clamp(min=eps), (b1_y2 - b1_y1).clamp(min=eps)
+    b2_w, b2_h = (b2_x2 - b2_x1).clamp(min=eps), (b2_y2 - b2_y1).clamp(min=eps)
+    wasserstein = (b1_cx - b2_cx).pow(2) + (b1_cy - b2_cy).pow(2) + ((b1_w - b2_w).pow(2) + (b1_h - b2_h).pow(2)) / 4
+    return 1.0 - torch.exp(-torch.sqrt(wasserstein.clamp(min=eps)) / max(float(constant), eps))
+
+
 def wiou_box_loss(
     pred_bboxes: torch.Tensor,
     target_bboxes: torch.Tensor,
@@ -67,7 +79,14 @@ def wiou_box_loss(
 ) -> torch.Tensor:
     """Compute dynamic non-monotonic WIoU loss for aligned xyxy boxes."""
     raw_iou, distance_gain = xyxy_iou_distance_gain(pred_bboxes, target_bboxes)
-    if str(get_arg(hyp, "wiou_fallback_base", "raw_iou")).lower() == "ciou_focus" and ciou_loss is not None:
+    fallback_base = str(get_arg(hyp, "wiou_fallback_base", "raw_iou")).lower()
+    if fallback_base == "nwd":
+        base_loss = normalized_wasserstein_loss(
+            pred_bboxes,
+            target_bboxes,
+            constant=float(get_arg(hyp, "nwd_constant", 12.8)),
+        ).clamp(min=0.0, max=2.0)
+    elif fallback_base == "ciou_focus" and ciou_loss is not None:
         base_loss = ciou_loss.clamp(min=0.0, max=2.0)
     else:
         base_loss = (1.0 - raw_iou).clamp(min=0.0, max=2.0)

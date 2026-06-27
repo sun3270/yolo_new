@@ -35,6 +35,7 @@ DEFAULT_LOSS_CONFIG = {
     "wiou_use_distance_gain": True,
     "wiou_distance_gain_max": 1.8,
     "wiou_fallback_base": "raw_iou",
+    "nwd_constant": 12.8,
     "progloss_enabled": True,
     "progloss_warmup_ratio": 0.10,
     "progloss_ramp_end_ratio": 0.60,
@@ -43,6 +44,13 @@ DEFAULT_LOSS_CONFIG = {
     "progloss_tail_weight_min": 0.75,
     "progloss_tail_weight_max": 1.8,
     "progloss_class_counts": None,
+    "tal_topk": None,
+    "tal_topk2": None,
+    "small_box_topk_boost": False,
+    "small_box_area_threshold": 0.01,
+    "small_box_topk": 20,
+    "small_box_topk2": 5,
+    "preserve_one2one_assignment": True,
 }
 ACTIVE_LOSS_CONFIG = DEFAULT_LOSS_CONFIG.copy()
 
@@ -118,8 +126,14 @@ class v8DetectionWIoUProgLoss(v8DetectionLoss):
 
     def __init__(self, model, tal_topk: int = 10, tal_topk2: int | None = None):
         """Initialize native detection loss, then replace only the experimental components."""
+        cfg = ACTIVE_LOSS_CONFIG.copy()
+        preserve_one2one = bool(get_arg(cfg, "preserve_one2one_assignment", True)) and tal_topk2 == 1
+        if not preserve_one2one:
+            tal_topk = int(get_arg(cfg, "tal_topk", tal_topk) or tal_topk)
+            tal_topk2_cfg = get_arg(cfg, "tal_topk2", tal_topk2)
+            tal_topk2 = int(tal_topk2_cfg) if tal_topk2_cfg is not None else tal_topk2
         super().__init__(model, tal_topk, tal_topk2)
-        self.exp_cfg = ACTIVE_LOSS_CONFIG.copy()
+        self.exp_cfg = cfg
         self.loss_epoch = 0
         self.loss_progress = 0.0
         self.bbox_loss = BboxWIoUProgLoss(self.reg_max, self.exp_cfg).to(self.device)
@@ -143,6 +157,23 @@ class v8DetectionWIoUProgLoss(v8DetectionLoss):
             self.loss_progress,
         )
 
+    def _small_box_assignment_topk(self, gt_bboxes: torch.Tensor, mask_gt: torch.Tensor, imgsz: torch.Tensor) -> tuple[int, int] | None:
+        """Return boosted assigner topk values when a batch contains tiny GT boxes."""
+        if not get_arg(self.exp_cfg, "small_box_topk_boost", False):
+            return None
+        valid = mask_gt.squeeze(-1)
+        if not valid.any():
+            return None
+        wh = (gt_bboxes[..., 2:4] - gt_bboxes[..., 0:2]).clamp(min=0.0)
+        image_area = (imgsz[0] * imgsz[1]).clamp(min=1.0)
+        area = (wh[..., 0] * wh[..., 1]) / image_area
+        threshold = float(get_arg(self.exp_cfg, "small_box_area_threshold", 0.01))
+        if not area[valid].le(threshold).any():
+            return None
+        topk = max(int(self.assigner.topk), int(get_arg(self.exp_cfg, "small_box_topk", self.assigner.topk)))
+        topk2 = max(int(self.assigner.topk2), int(get_arg(self.exp_cfg, "small_box_topk2", self.assigner.topk2)))
+        return topk, topk2
+
     def get_assigned_targets_and_loss(self, preds: dict[str, torch.Tensor], batch: dict[str, Any]) -> tuple:
         """Return assigned targets and loss with the experimental classification term."""
         loss = torch.zeros(3, device=self.device)
@@ -163,14 +194,21 @@ class v8DetectionWIoUProgLoss(v8DetectionLoss):
 
         pred_bboxes = self.bbox_decode(anchor_points, pred_distri)
 
-        _, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner(
-            pred_scores.detach().sigmoid(),
-            (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
-            anchor_points * stride_tensor,
-            gt_labels,
-            gt_bboxes,
-            mask_gt,
-        )
+        original_topk, original_topk2 = self.assigner.topk, self.assigner.topk2
+        boosted_topk = self._small_box_assignment_topk(gt_bboxes, mask_gt, imgsz)
+        if boosted_topk is not None:
+            self.assigner.topk, self.assigner.topk2 = boosted_topk
+        try:
+            _, target_bboxes, target_scores, fg_mask, target_gt_idx = self.assigner(
+                pred_scores.detach().sigmoid(),
+                (pred_bboxes.detach() * stride_tensor).type(gt_bboxes.dtype),
+                anchor_points * stride_tensor,
+                gt_labels,
+                gt_bboxes,
+                mask_gt,
+            )
+        finally:
+            self.assigner.topk, self.assigner.topk2 = original_topk, original_topk2
 
         target_scores_sum = max(target_scores.sum(), 1)
         loss[1] = self._classification_loss(pred_scores, target_scores, dtype) / target_scores_sum

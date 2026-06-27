@@ -1,0 +1,54 @@
+# YOLO26n-EdgeLite-HyperACE-lite-P2: aggressive recall variant with high-order fusion and P2 head.
+
+nc: 9
+end2end: True
+reg_max: 1
+scale: n
+scales:
+  n: [0.50, 0.25, 1024]
+  s: [0.50, 0.50, 1024]
+  m: [0.50, 1.00, 512]
+  l: [1.00, 1.00, 512]
+  x: [1.00, 1.50, 512]
+
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]]                  # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]]                 # 1-P2/4
+  - [-1, 2, C3k2, [256, False, 0.25]]          # 2-P2 texture source
+  - [-1, 1, LDSConv, [256, 3, 2]]              # 3-P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]          # 4-P3 texture source
+  - [-1, 1, LDSConv, [512, 3, 2]]              # 5-P4/16
+  - [-1, 2, C3k2, [512, True]]                 # 6-P4 source
+  - [-1, 1, LDSConv, [1024, 3, 2]]             # 7-P5/32
+  - [-1, 2, C3k2, [1024, True]]                # 8
+  - [-1, 1, SPPF, [1024, 5, 3, True]]          # 9
+  - [-1, 2, C2PSA, [1024]]                     # 10-P5 semantic source
+  - [[4, 6, 10], 1, HyperACELiteBridge, [256, True, 8]] # 11 P3/P4/P5 -> P5 enhanced
+  - [[4, 10], 1, P5ToP3SemanticFuse, [128, 8]] # 12 P5 semantic -> P3 enhanced
+
+head:
+  - [11, 1, nn.Upsample, [None, 2, "nearest"]] # 13
+  - [[-1, 6], 1, Concat, [1]]                  # 14
+  - [-1, 2, C3k2, [512, True]]                 # 15 P4 path
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 16
+  - [[-1, 12], 1, Concat, [1]]                 # 17
+  - [-1, 2, C3k2, [256, True]]                 # 18 P3/8
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]] # 19
+  - [[-1, 2], 1, Concat, [1]]                  # 20
+  - [-1, 2, C3k2, [128, True]]                 # 21 P2/4-small
+
+  - [-1, 1, LDSConv, [128, 3, 2]]              # 22
+  - [[-1, 18], 1, Concat, [1]]                 # 23
+  - [-1, 2, C3k2, [256, True]]                 # 24 P3/8
+
+  - [-1, 1, LDSConv, [256, 3, 2]]              # 25
+  - [[-1, 15], 1, Concat, [1]]                 # 26
+  - [-1, 2, C3k2, [512, True]]                 # 27 P4/16
+
+  - [-1, 1, LDSConv, [512, 3, 2]]              # 28
+  - [[-1, 11], 1, Concat, [1]]                 # 29
+  - [-1, 1, C3k2, [1024, True, 0.5, True]]     # 30 P5/32
+
+  - [[21, 24, 27, 30], 1, Detect, [nc]]        # 31 Detect(P2, P3, P4, P5)

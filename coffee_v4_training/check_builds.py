@@ -63,6 +63,7 @@ def main() -> None:
         print(
             f"{name}: params={params}, DetectFrom={detect_from}, "
             f"EdgeBridge={'EdgeLGMSFBridge' in module_names}, "
+            f"HyperACE={'HyperACELiteBridge' in module_names}, "
             f"P5ToP3={'P5ToP3SemanticFuse' in module_names}, "
             f"ELTEB={'ELTEB' in module_names or 'ELTEBLite' in module_names}, "
             f"output={summarize_output(output)}"

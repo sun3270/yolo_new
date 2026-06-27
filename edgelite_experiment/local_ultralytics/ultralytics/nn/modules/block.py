@@ -2159,6 +2159,20 @@ class FastNormFuse2(nn.Module):
         return w[0] * x1 + w[1] * x2
 
 
+class FastNormFuse3(nn.Module):
+    """Fast normalized weighted fusion for three feature streams."""
+
+    def __init__(self, eps=1e-4):
+        super().__init__()
+        self.w = nn.Parameter(torch.ones(3, dtype=torch.float32))
+        self.eps = eps
+
+    def forward(self, x1, x2, x3):
+        w = F.relu(self.w)
+        w = w / (w.sum() + self.eps)
+        return w[0] * x1 + w[1] * x2 + w[2] * x3
+
+
 class SimAM(nn.Module):
     """Parameter-free SimAM attention for suppressing complex background interference."""
 
@@ -2199,6 +2213,38 @@ class EdgeLGMSFBridge(nn.Module):
         if texture.shape[-2:] != semantic.shape[-2:]:
             texture = F.interpolate(texture, size=semantic.shape[-2:], mode="nearest")
         return self.out(self.attn(self.fuse(texture, semantic)))
+
+
+class HyperACELiteBridge(nn.Module):
+    """Light high-order P3/P4/P5 fusion inspired by HyperACE-style multi-scale aggregation."""
+
+    def __init__(self, c3, c4, c5, c_out, use_simam=True, reduction=8):
+        super().__init__()
+        c_mid = max(8, int(c_out // reduction))
+        self.p3 = TextureStreamP3(c3, c_mid)
+        self.p3_down = nn.Sequential(
+            LDSConv(c_mid, c_mid, k=3, s=2),
+            LDSConv(c_mid, c_mid, k=3, s=2),
+        )
+        self.p4 = nn.Sequential(ConvBNAct(c4, c_mid, k=1, s=1), LDSConv(c_mid, c_mid, k=3, s=2))
+        self.p5 = SemanticStreamP5(c5, c_mid)
+        self.fuse = FastNormFuse3()
+        self.mix = nn.Sequential(DWSeparableConv(c_mid, c_mid, k=5, s=1), ConvBNAct(c_mid, c_mid, k=1, s=1))
+        self.attn = SimAM() if use_simam else nn.Identity()
+        self.out = ConvBNAct(c_mid, c_out, k=1, s=1)
+
+    def forward(self, xs):
+        p3, p4, p5 = xs
+        p3_enhanced = self.p3_down(self.p3(p3))
+        p4_enhanced = self.p4(p4)
+        p5_enhanced = self.p5(p5)
+        target_size = p5_enhanced.shape[-2:]
+        if p3_enhanced.shape[-2:] != target_size:
+            p3_enhanced = F.interpolate(p3_enhanced, size=target_size, mode="nearest")
+        if p4_enhanced.shape[-2:] != target_size:
+            p4_enhanced = F.interpolate(p4_enhanced, size=target_size, mode="nearest")
+        fused = self.fuse(p3_enhanced, p4_enhanced, p5_enhanced)
+        return self.out(self.attn(fused + self.mix(fused)))
 
 
 class P5ToP3SemanticFuse(nn.Module):

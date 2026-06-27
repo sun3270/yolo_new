@@ -170,6 +170,8 @@ wandb/
 /analysis_temp/
 /coffee_original_hash_report/
 /coffee_self_duplicate_report/
+elteb_experiment/preprocessed_data/
+coffee_v4_training/derived_data/
 /_analysis_zips/
 docx_render_qa_urp_report/
 

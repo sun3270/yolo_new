@@ -49,6 +49,7 @@ from ultralytics.nn.modules import (
     DWConvTranspose2d,
     LDSConv,
     EdgeLGMSFBridge,
+    HyperACELiteBridge,
     P5ToP3SemanticFuse,
     ELTEB,
     ELTEBLite,
@@ -1686,6 +1687,12 @@ def parse_model(d, ch, verbose=True):
             c3, c5 = ch[f[0]], ch[f[1]]
             c2 = args[0] if len(args) > 0 else c5
             args = [c3, c5, c2, *args[1:]]
+        elif m is HyperACELiteBridge:
+            if not isinstance(f, list) or len(f) != 3:
+                raise ValueError("HyperACELiteBridge expects from=[P3_INDEX, P4_INDEX, P5_INDEX].")
+            c3, c4, c5 = ch[f[0]], ch[f[1]], ch[f[2]]
+            c2 = args[0] if len(args) > 0 else c5
+            args = [c3, c4, c5, c2, *args[1:]]
         elif m is P5ToP3SemanticFuse:
             if not isinstance(f, list) or len(f) != 2:
                 raise ValueError("P5ToP3SemanticFuse expects from=[P3_INDEX, P5_INDEX].")
