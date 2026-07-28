@@ -177,6 +177,7 @@ docx_render_qa_urp_report/
 weights/
 *.weights
 *.pt
+!coffee26n_experiment/yolo26n.pt
 *.ts
 *.pb
 *.onnx
@@ -223,3 +224,12 @@ calibration_*.npy
 # Training logs
 args.yaml
 results.csv
+
+# Coffee26n V5 generated outputs
+/coffee26n_experiment/runs/
+/coffee26n_experiment/structure_report.json
+/coffee26n_experiment/**/__pycache__/
+/coffee26n_experiment/**/.pytest_cache/
+/coffee26n_experiment/**/*.cache.*
+!coffee26n_experiment/local_ultralytics/ultralytics/assets/*.jpg
+!coffee26n_experiment/tests/fixtures/**/images/**/*.jpg

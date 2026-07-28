@@ -1,0 +1,12 @@
+schema_version: 1
+enabled: false
+pairs: []
+quality_threshold: 0.30
+margin_min: 0.15
+margin_max: 0.30
+margin_base: 0.15
+margin_kappa: 0.05
+softplus_beta: 10.0
+lambda_max: 0.20
+ramp_start: 0.10
+ramp_end: 0.60

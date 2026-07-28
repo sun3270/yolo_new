@@ -1,0 +1,126 @@
+{
+  "source": "E:\\ultralytics-8.4.43\\coffee_self_sum_5cls_yolo_grouped_701515",
+  "output": "E:\\ultralytics-8.4.43\\coffee_self_sum_5cls_yolo_grouped_701515_clean",
+  "seed": 20260718,
+  "policy": {
+    "source_dataset_preserved": true,
+    "ambiguous_CR_handling": "exclude instead of guessing another class",
+    "near_duplicate_handling": "keep canonical earlier original; exclude re-encoded copy group",
+    "CR_augmentation_cap": 2,
+    "CR_split": "group-wise 70/15/15 optimized for stage, orientation, object scale, images, and instances"
+  },
+  "final_images": 2935,
+  "final_images_by_split_and_type": {
+    "train": {
+      "original": 1708,
+      "existing_aug": 224,
+      "photoaug": 164
+    },
+    "val": {
+      "original": 357,
+      "existing_aug": 35,
+      "photoaug": 31
+    },
+    "test": {
+      "original": 361,
+      "existing_aug": 25,
+      "photoaug": 30
+    }
+  },
+  "final_class_image_counts": {
+    "train": {
+      "ANT_AB": 964,
+      "ANT_CD": 430,
+      "BLS": 336,
+      "CR": 178,
+      "SM": 198
+    },
+    "val": {
+      "ANT_AB": 210,
+      "ANT_CD": 90,
+      "BLS": 75,
+      "CR": 39,
+      "SM": 18
+    },
+    "test": {
+      "ANT_AB": 213,
+      "BLS": 76,
+      "ANT_CD": 90,
+      "CR": 38,
+      "SM": 12
+    }
+  },
+  "final_class_instance_counts": {
+    "train": {
+      "ANT_AB": 1246,
+      "ANT_CD": 505,
+      "BLS": 465,
+      "CR": 212,
+      "SM": 412
+    },
+    "val": {
+      "ANT_AB": 272,
+      "ANT_CD": 105,
+      "BLS": 96,
+      "CR": 47,
+      "SM": 42
+    },
+    "test": {
+      "ANT_AB": 271,
+      "BLS": 104,
+      "ANT_CD": 107,
+      "CR": 47,
+      "SM": 49
+    }
+  },
+  "CR_original_stage_counts": {
+    "train": {
+      "A": 78,
+      "B": 54,
+      "C": 7
+    },
+    "val": {
+      "A": 16,
+      "B": 11,
+      "C": 2
+    },
+    "test": {
+      "A": 16,
+      "B": 12,
+      "C": 2
+    }
+  },
+  "CR_original_orientation_counts": {
+    "train": {
+      "square": 16,
+      "portrait": 115,
+      "landscape": 8
+    },
+    "val": {
+      "square": 3,
+      "portrait": 24,
+      "landscape": 2
+    },
+    "test": {
+      "square": 3,
+      "portrait": 25,
+      "landscape": 2
+    }
+  },
+  "actions": {
+    "kept": 2831,
+    "excluded_near_duplicate": 25,
+    "moved_CR_group_split": 104,
+    "excluded_ambiguous_CR": 16,
+    "source_excluded": 259,
+    "excluded_CR_augmentation_excess": 50
+  },
+  "excluded_by_reason": {
+    "near_duplicate_reencoded_copy": 25,
+    "ambiguous_or_no_visible_CR_cue": 16,
+    "parent_original_missing": 259,
+    "CR_augmentation_cap_max2_per_group": 50
+  },
+  "clean_groups_crossing_splits": 0,
+  "cross_split_group_details": {}
+}

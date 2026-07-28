@@ -1,0 +1,57 @@
+schema_version: 1
+name: coffee_ant6
+dataset_yaml: coffee_self_sum/coffee_self_sum.yaml
+expected_nc: 6
+expected_names: [ANT_AB, ANT_CD, BLS_AB, BLS_CD, CR, SM]
+tail_bce:
+  enabled: true
+  counts: {ANT_AB: 1443, ANT_CD: 446, BLS_AB: 356, BLS_CD: 208, CR: 514, SM: 347}
+  cap: 2.4
+  exponent: 0.5
+  ramp_start: 0.10
+  ramp_end: 0.60
+pair_margin:
+  enabled: true
+  auto_from_counts: false
+  auto_topk: 1
+  auto_min_ratio: 1.25
+  pairs:
+    - {true_name: ANT_CD, rival_name: ANT_AB}
+    - {true_name: BLS_AB, rival_name: ANT_AB}
+    - {true_name: CR, rival_name: ANT_AB}
+    - {true_name: BLS_CD, rival_name: ANT_CD}
+  quality_threshold: 0.30
+  margin_min: 0.15
+  margin_max: 0.30
+  margin_base: 0.15
+  margin_kappa: 0.05
+  softplus_beta: 10.0
+  lambda_max: 0.20
+  ramp_start: 0.10
+  ramp_end: 0.60
+bgmix:
+  enabled: true
+  p: 0.25
+  box_expand: 0.02
+  feather_px: 16
+  blur_kernel: 21
+  no_box: skip
+structure:
+  context: false
+  context_kernel: 13
+  mid: false
+  mid_kernel: 9
+  mixdown: true
+budget:
+  compare_family: yolo26s
+  recommended_n_multiplier: 2.0
+loss:
+  wiou_enabled: true
+  wiou_ramp_start: 0.10
+  wiou_ramp_end: 0.60
+  wiou_alpha: 1.7
+  wiou_delta: 2.7
+  wiou_momentum: 0.0001
+  wiou_focus_min: 0.5
+  wiou_focus_max: 3.0
+  wiou_distance_gain_max: 1.8

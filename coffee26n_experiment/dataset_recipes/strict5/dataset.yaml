@@ -1,0 +1,10 @@
+train: images/train
+val: images/val
+test: images/test
+nc: 5
+names:
+  0: ANT_AB
+  1: ANT_CD
+  2: BLS
+  3: CR
+  4: SM

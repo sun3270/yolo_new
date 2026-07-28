@@ -1,0 +1,53 @@
+schema_version: 1
+name: generic
+dataset_yaml: null
+expected_nc: null
+expected_names: null
+tail_bce:
+  enabled: false
+  counts: null
+  cap: 1.8
+  exponent: 0.5
+  ramp_start: 0.10
+  ramp_end: 0.60
+pair_margin:
+  enabled: false
+  pairs: []
+  auto_from_counts: false
+  auto_topk: 1
+  auto_min_ratio: 1.25
+  quality_threshold: 0.30
+  margin_min: 0.15
+  margin_max: 0.30
+  margin_base: 0.15
+  margin_kappa: 0.05
+  softplus_beta: 10.0
+  lambda_max: 0.20
+  ramp_start: 0.10
+  ramp_end: 0.60
+bgmix:
+  enabled: false
+  p: 0.0
+  box_expand: 0.02
+  feather_px: 16
+  blur_kernel: 21
+  no_box: skip
+structure:
+  context: false
+  context_kernel: 13
+  mid: false
+  mid_kernel: 9
+  mixdown: true
+budget:
+  compare_family: yolo26s
+  recommended_n_multiplier: 2.0
+loss:
+  wiou_enabled: true
+  wiou_ramp_start: 0.10
+  wiou_ramp_end: 0.60
+  wiou_alpha: 1.7
+  wiou_delta: 2.7
+  wiou_momentum: 0.0001
+  wiou_focus_min: 0.5
+  wiou_focus_max: 3.0
+  wiou_distance_gain_max: 1.8
