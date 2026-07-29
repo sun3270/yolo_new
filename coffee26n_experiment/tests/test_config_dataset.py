@@ -101,7 +101,7 @@ def test_clean_dataset_lock_matches_hpc_snapshot_when_dataset_is_available():
     if not yaml_path.is_file():
         pytest.skip("Full clean coffee dataset is not installed in this workspace.")
     dataset = parse_dataset(yaml_path)
-    assert dataset["data_lock_id"] == "aa319dc094e763abfa7fab56504842c09ba494a62cece06fee58bb0401ed581e"
+    assert dataset["data_lock_id"] == "3f8b9c510be43c520f3ef90bae53caf24c8cf28aaa4900e160549cbfafa57c65"
 
 
 def test_strict_dataset_rebuild_uses_manifest_hardlinks(tmp_path):

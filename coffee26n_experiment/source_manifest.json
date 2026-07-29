@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-28T03:53:42.679167+00:00",
+  "generated_at": "2026-07-29T02:45:37.164081+00:00",
   "package_root": "coffee26n_experiment",
   "native_source_root": "ultralytics",
   "native_revision": "ultralytics-8.4.43",
@@ -191,29 +191,29 @@
       "logical_path": "dataset_recipes/strict5/build_summary.json",
       "source_path": "coffee26n_experiment/dataset_recipes/strict5/build_summary.json",
       "package_path": "dataset_recipes/strict5/build_summary.json",
-      "sha256": "748ee455dde2153c1a398b131cf30b5ac686b79b62d074d4c35b040910512c47",
-      "size_bytes": 2767
+      "sha256": "03f1a556c88bb09d115744a48939b734919f89201ab261fe95f8a9aed6452069",
+      "size_bytes": 2641
     },
     {
       "logical_path": "dataset_recipes/strict5/classes.txt",
       "source_path": "coffee26n_experiment/dataset_recipes/strict5/classes.txt",
       "package_path": "dataset_recipes/strict5/classes.txt",
-      "sha256": "1e978dc49438280cd0f4e0f3ba7c57864372096849d95ed3beb6f8f17beff5d5",
-      "size_bytes": 29
+      "sha256": "801a5e570f41d1e5aa5bb662d73e0a9d98ad45246a0d7aee8453dd03e9547a7c",
+      "size_bytes": 24
     },
     {
       "logical_path": "dataset_recipes/strict5/dataset.yaml",
       "source_path": "coffee26n_experiment/dataset_recipes/strict5/dataset.yaml",
       "package_path": "dataset_recipes/strict5/dataset.yaml",
-      "sha256": "55f2d736c4f9b7bb099fc7814d0578dbde8f9bf7ff666f0d0e4d9062972e0387",
-      "size_bytes": 126
+      "sha256": "aa89b45691277aa771865d16965d4e217e94e0907cc229ecd82cbf75e4e16fb0",
+      "size_bytes": 116
     },
     {
       "logical_path": "dataset_recipes/strict5/split_manifest.csv",
       "source_path": "coffee26n_experiment/dataset_recipes/strict5/split_manifest.csv",
       "package_path": "dataset_recipes/strict5/split_manifest.csv",
-      "sha256": "71262cc9072b5fb595f006fb8be1238ffa4d1607d7e1098465edaa382aaaf5e5",
-      "size_bytes": 290070
+      "sha256": "f52fcf7cd80ad4b8f0ee492bdf339eeb586be40a6291efcd51f80d0773a4e9d1",
+      "size_bytes": 286784
     },
     {
       "logical_path": "ultralytics/__init__.py",
@@ -2445,7 +2445,7 @@
       "logical_path": "tests/test_config_dataset.py",
       "source_path": "coffee26n_experiment/tests/test_config_dataset.py",
       "package_path": "tests/test_config_dataset.py",
-      "sha256": "c83d38ebeb3546c9c586ef71a84e71f35ff6c256a074d6371fc264a6b8a3a174",
+      "sha256": "d492d224c42d0f943031d35211657e6040719f0232a5848dc3ec51ae3f032897",
       "size_bytes": 6476
     },
     {
